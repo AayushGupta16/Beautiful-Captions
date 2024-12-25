@@ -114,7 +114,6 @@ pytest --cov=beautiful_captions tests/
 
 ### Python Styleguide
 
-* Follow PEP 8
 * Use meaningful variable names
 * Add docstrings to all functions and classes
 * Comment complex algorithms or business logic

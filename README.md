@@ -129,7 +129,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for full details on our development proce
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/beautiful-captions.git
+git clone https://github.com/aayushgupta16/beautiful-captions.git
 cd beautiful-captions
 ```
 
@@ -159,6 +159,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Support
 
-- 📫 For bug reports and feature requests, use [GitHub Issues](https://github.com/yourusername/beautiful-captions/issues)
-- 💬 For questions and discussions, join our [GitHub Discussions](https://github.com/yourusername/beautiful-captions/discussions)
-- 🗳️ Vote on new features in our [Ideas section](https://github.com/yourusername/beautiful-captions/discussions/categories/ideas)
+- 📫 For bug reports and feature requests, use [GitHub Issues](https://github.com/aayushgupta16/beautiful-captions/issues)
+- 💬 For questions and discussions, join our [GitHub Discussions](https://github.com/aayushgupta16/beautiful-captions/discussions)
+- 🗳️ Vote on new features in our [Ideas section](https://github.com/aayushgupta16/beautiful-captions/discussions/categories/ideas)
