@@ -105,11 +105,25 @@ Beautiful Captions is optimized for speed while maintaining high-quality output.
 
 ## Contributing
 
-We welcome contributions! Here's how you can help:
+We welcome contributions of all sizes! Beautiful Captions is designed to be modular and easy to extend. Here are some ways you can contribute:
 
-1. Check out our [GitHub Issues](https://github.com/yourusername/beautiful-captions/issues)
-2. Join discussions and vote on features in [GitHub Discussions](https://github.com/yourusername/beautiful-captions/discussions)
-3. Submit pull requests for bug fixes or features
+### Areas for Contribution
+
+1. **Transcription Services**: Add support for new transcription services by implementing the transcription interface
+2. **Caption Styles**: Create new preset styles that others can use
+3. **Animations**: Develop new caption animation types
+4. **Performance Improvements**: Help optimize the caption rendering pipeline
+5. **Documentation**: Improve docs, add examples, or fix typos
+6. **Bug Reports**: Submit detailed bug reports and feature requests
+
+### Getting Started
+
+1. Check our [Contributing Guide](CONTRIBUTING.md) for detailed instructions
+2. Look for issues labeled `good-first-issue` or `help-wanted`
+3. Join discussions in GitHub Discussions to share ideas
+4. Read our [Code of Conduct](CODE_OF_CONDUCT.md)
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for full details on our development process.
 
 ### Development Setup
 
