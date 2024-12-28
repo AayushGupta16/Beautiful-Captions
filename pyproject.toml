@@ -33,13 +33,6 @@ dependencies = [
 ]
 requires-python = ">=3.8"
 
-[project.optional-dependencies]
-dev = [
-    "pytest>=7.0",
-    "pytest-asyncio>=0.21.0",
-    "pytest-cov>=4.0",
-]
-
 [project.urls]
 Homepage = "https://github.com/aayushgupta16/beautiful-captions"
 Repository = "https://github.com/aayushgupta16/beautiful-captions.git"
@@ -49,12 +42,3 @@ Documentation = "https://beautiful-captions.readthedocs.io/"
 [tool.hatch.build.targets.wheel]
 packages = ["src"]
 
-[tool.pytest.ini_options]
-asyncio_mode = "auto"
-asyncio_fixture_loop_scope = "function"
-testpaths = ["tests"]
-python_files = ["test_*.py"]
-addopts = "-v --cov=src --cov-report=term-missing"
-markers = [
-    "integration: marks tests as integration tests",
-]
