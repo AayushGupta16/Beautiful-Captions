@@ -39,6 +39,6 @@ Repository = "https://github.com/aayushgupta16/beautiful-captions.git"
 Documentation = "https://beautiful-captions.readthedocs.io/"
 "Bug Tracker" = "https://github.com/aayushgupta16/beautiful-captions/issues"
 
-[tool.hatch.build.targets.wheel]
-packages = ["src"]
+[tool.hatch.build]
+packages = ["src/beautiful_captions"]
 

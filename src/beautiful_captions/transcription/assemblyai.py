@@ -76,26 +76,19 @@ class AssemblyAIService(TranscriptionService):
             raise
             
     def to_srt(self, utterances: List[Utterance], speaker_colors: List[str]) -> str:
-        """Convert utterances to SRT format with colored speaker labels.
+        """Convert utterances to plain SRT format.
         
         Args:
             utterances: List of transcribed utterances
-            speaker_colors: List of colors to use for different speakers
+            speaker_colors: List of colors (unused in plain SRT)
             
         Returns:
-            SRT formatted string with speaker colors
+            SRT formatted string
         """
         srt_content = ""
         subtitle_index = 1
-        speaker_color_map = {}
         
         for utterance in utterances:
-            if utterance.speaker not in speaker_color_map:
-                color_index = len(speaker_color_map) % len(speaker_colors)
-                speaker_color_map[utterance.speaker] = speaker_colors[color_index]
-            
-            color = speaker_color_map[utterance.speaker]
-            
             for word in utterance.words:
                 start_time = timedelta(milliseconds=word.start)
                 end_time = timedelta(milliseconds=word.end)
@@ -106,8 +99,7 @@ class AssemblyAIService(TranscriptionService):
                 
                 srt_content += f"{subtitle_index}\n"
                 srt_content += f"{start_str} --> {end_str}\n"
-                srt_content += f'<font color="{color}">{utterance.speaker}: {word.text}</font>\n\n'
+                srt_content += f"{utterance.speaker}: {word.text}\n\n"
                 
                 subtitle_index += 1
-        
         return srt_content

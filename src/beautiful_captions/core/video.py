@@ -8,7 +8,7 @@ import ffmpeg
 from ..core.config import CaptionConfig
 from ..transcription.base import TranscriptionService
 from ..utils.ffmpeg import extract_audio, combine_video_subtitles
-from ..utils.subtitles import create_ass_subtitles
+from ..utils.subtitles import create_ass_subtitles, style_srt_content
 
 
 class Video:
@@ -35,46 +35,64 @@ class Video:
         self._ass_path: Optional[Path] = None
         
     async def transcribe(
-        self, 
-        service: TranscriptionService,
+        self,
+        service: Union[str, TranscriptionService],
+        api_key: Optional[str] = None,
+        max_speakers: int = 3
     ) -> None:
         """Transcribe video audio using specified service.
         
         Args:
-            service: Configured transcription service instance
+            service: Either a TranscriptionService instance or service type string
+            api_key: API key for transcription service (required if service is a string)
+            max_speakers: Maximum number of speakers to detect
+            
+        Raises:
+            ValueError: If service is a string and no api_key is provided
         """
+        if isinstance(service, str):
+            if not api_key:
+                raise ValueError("API key is required when specifying service by name")
+            
+            from ..core.caption import create_transcription_service
+            service = create_transcription_service(service, api_key)
+        
         if not self._audio_path:
             self._audio_path = self.video_path.with_suffix('.aac')
             extract_audio(self.video_path, self._audio_path)
-            
-        utterances = await service.transcribe(
-            str(self._audio_path),
-            max_speakers=self.config.diarization.max_speakers
-        )
         
-        self._srt_content = service.to_srt(
-            utterances,
-            speaker_colors=self.config.diarization.colors
-        )
+        self._utterances = await service.transcribe(str(self._audio_path), max_speakers)
+        self._srt_content = service.to_srt(self._utterances, self.config.diarization.colors)
         
     def add_captions(
         self,
+        srt_path: Optional[Union[str, Path]] = None,
         srt_content: Optional[str] = None,
         output_path: Optional[Union[str, Path]] = None
     ) -> Path:
         """Add captions to video.
         
         Args:
-            srt_content: Optional SRT content (uses transcribed content if not provided)
+            srt_path: Optional path to SRT file
+            srt_content: Optional SRT content string (ignored if srt_path is provided)
             output_path: Optional output path (defaults to input path with _captioned suffix)
             
         Returns:
             Path to output video file
         """
-        if not srt_content and not self._srt_content:
-            raise ValueError("No caption content available. Either provide SRT content or run transcribe() first.")
-            
+        # Get SRT content from file or string or transcription
+        if srt_path:
+            with open(srt_path, 'r', encoding='utf-8') as f:
+                srt_content = f.read()
+        elif not srt_content and not self._srt_content:
+            raise ValueError("No caption content available. Provide either srt_path, srt_content, or run transcribe() first.")
+        
         srt_content = srt_content or self._srt_content
+        
+        # Apply styling if enabled
+        if self.config.diarization.enabled:
+            srt_content = style_srt_content(srt_content, self.config.diarization.colors)
+            
         if not output_path:
             output_path = self.video_path.with_stem(f"{self.video_path.stem}_captioned")
             
@@ -83,6 +101,7 @@ class Video:
         
         create_ass_subtitles(
             srt_content,
+            self.video_path,
             self._ass_path,
             self.config.style,
             self.config.animation

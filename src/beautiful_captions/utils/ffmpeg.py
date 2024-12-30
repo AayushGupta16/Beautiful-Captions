@@ -2,7 +2,7 @@
 
 import logging
 from pathlib import Path
-from typing import Union
+from typing import Union, Tuple
 import subprocess
 
 logger = logging.getLogger(__name__)
@@ -96,4 +96,34 @@ def get_video_duration(video_path: Union[str, Path]) -> float:
         
     except subprocess.CalledProcessError as e:
         logger.error(f"FFprobe duration check failed: {e.stderr}")
+        raise
+
+def get_video_dimensions(video_path: Union[str, Path]) -> Tuple[int, int]:
+    """Get video width and height.
+    
+    Args:
+        video_path: Path to video file
+        
+    Returns:
+        Tuple of (width, height)
+        
+    Raises:
+        subprocess.CalledProcessError: If FFmpeg command fails
+    """
+    try:
+        cmd = [
+            'ffprobe',
+            '-v', 'error',
+            '-select_streams', 'v:0',
+            '-show_entries', 'stream=width,height',
+            '-of', 'csv=s=x:p=0',
+            str(video_path)
+        ]
+        
+        result = subprocess.run(cmd, check=True, capture_output=True, text=True)
+        width, height = map(int, result.stdout.strip().split('x'))
+        return width, height
+        
+    except subprocess.CalledProcessError as e:
+        logger.error(f"FFprobe dimension check failed: {e.stderr}")
         raise

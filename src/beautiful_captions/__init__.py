@@ -5,6 +5,7 @@ from .core.caption import add_captions, process_video, extract_subtitles, captio
 from .core.video import Video
 from .styling.style import StyleManager, FontManager
 from .styling.animation import AnimationFactory, create_animation_for_subtitle
+from .utils.subtitles import style_srt_content
 
 __version__ = "0.1.0"
 
@@ -27,4 +28,5 @@ __all__ = [
     "FontManager",
     "AnimationFactory",
     "create_animation_for_subtitle",
+    "style_srt_content",
 ]

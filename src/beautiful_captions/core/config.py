@@ -8,6 +8,7 @@ class StyleConfig:
     color: str = "white"
     outline_color: str = "black"
     outline_thickness: int = 2
+    font_size: int = 140
 
 @dataclass
 class AnimationConfig:
@@ -38,3 +39,12 @@ class CaptionConfig:
             self.animation = AnimationConfig()
         if self.diarization is None:
             self.diarization = DiarizationConfig()
+
+style = StyleConfig(
+    font="Montserrat",
+    color="white",
+    outline_color="black",
+    outline_thickness=2,
+    position=0.5,
+    font_size=100  # Smaller text
+)
