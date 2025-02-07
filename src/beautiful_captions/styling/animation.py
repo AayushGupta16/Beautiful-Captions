@@ -1,7 +1,10 @@
 """Animation system for captions."""
 
 from dataclasses import dataclass
-from typing import List, Tuple
+from typing import List, Tuple, Optional
+import logging
+
+logger = logging.getLogger(__name__)
 
 @dataclass
 class Keyframe:
@@ -57,34 +60,37 @@ class BounceAnimation:
             commands += f"{{\\t({kf.time:.2f},{kf.time:.2f},\\fscx{kf.scale_x:.0f}\\fscy{kf.scale_y:.0f})}}"
             
         return commands
-
 class AnimationFactory:
     """Factory for creating different types of animations."""
     
+    SUPPORTED_TYPES = {"bounce"}  # Define supported types
+    
     @staticmethod
     def create(
-        animation_type: str,
-        duration: float,
+        animation_type: Optional[str] = None,  # Make optional
+        duration: float = 0.0,
         num_keyframes: int = 10
     ) -> str:
         """Create animation commands for specified type.
         
         Args:
-            animation_type: Type of animation to create
+            animation_type: Type of animation to create (optional)
             duration: Duration of animation in seconds
             num_keyframes: Number of keyframes to generate
             
         Returns:
             String of ASS animation commands
-            
-        Raises:
-            ValueError: If animation type is not supported
         """
+        if animation_type is None:
+            return ""  # Return empty string for no animation
+            
+        if animation_type not in AnimationFactory.SUPPORTED_TYPES:
+            logger.warning(f"Unsupported animation type '{animation_type}', defaulting to no animation")
+            return ""
+            
         if animation_type == "bounce":
             animation = BounceAnimation(duration, num_keyframes)
             return animation.to_ass_commands()
-        else:
-            raise ValueError(f"Unsupported animation type: {animation_type}")
             
 def create_animation_for_subtitle(
     text: str,
