@@ -3,6 +3,9 @@
 import os
 from pathlib import Path
 from typing import Dict, Optional
+import logging
+
+logger = logging.getLogger(__name__)
 
 class FontManager:
     """Manages font availability and paths."""
@@ -63,6 +66,13 @@ class StyleManager:
         """Initialize style manager."""
         self.font_manager = FontManager()
         
+    def _validate_color(self, color: str, default: str = "&HFFFFFF&") -> str:
+        """Validate ASS color format."""
+        if not (color.startswith("&H") and color.endswith("&") and len(color) == 10):
+            logger.warning(f"Invalid color format '{color}', using default")
+            return default
+        return color
+        
     def create_ass_style(
         self,
         font_name: str = "Montserrat",
@@ -74,27 +84,20 @@ class StyleManager:
         bold: bool = False,
         italic: bool = False
     ) -> str:
-        """Create ASS style definition.
-        
-        Args:
-            font_name: Name of font to use
-            font_size: Font size in pixels
-            primary_color: Primary text color in ASS format
-            outline_color: Outline color in ASS format
-            outline_thickness: Outline thickness in pixels
-            vertical_position: Vertical position (0-1, from top)
-            bold: Whether to use bold style
-            italic: Whether to use italic style
-            
-        Returns:
-            ASS style definition string
-            
-        Raises:
-            ValueError: If font is not available
-        """
+        # Validate font
         if not self.font_manager.get_font_path(font_name):
-            raise ValueError(f"Font not available: {font_name}")
+            logger.warning(f"Font '{font_name}' not found, using default Montserrat")
+            font_name = "Montserrat"
             
+        # Validate colors
+        primary_color = self._validate_color(primary_color)
+        outline_color = self._validate_color(outline_color, "&H000000&")
+        
+        # Validate numeric ranges
+        font_size = max(1, min(font_size, 300))  # Reasonable limits
+        outline_thickness = max(0, min(outline_thickness, 10.0))
+        vertical_position = max(0, min(vertical_position, 1.0))
+        
         margin_v = int(1920 * vertical_position)
         
         style = (
@@ -110,29 +113,3 @@ class StyleManager:
         )
         
         return style
-    
-    def create_ass_header(self, style: str) -> str:
-        """Create complete ASS header with style.
-        
-        Args:
-            style: ASS style definition
-            
-        Returns:
-            Complete ASS header section
-        """
-        header = [
-            "[Script Info]",
-            "ScriptType: v4.00+",
-            "PlayResX: 1080",
-            "PlayResY: 1920",
-            "ScaledBorderAndShadow: yes",
-            "",
-            "[V4+ Styles]",
-            "Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding",
-            style,
-            "",
-            "[Events]",
-            "Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text"
-        ]
-        
-        return "\n".join(header)
