@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "beautiful-captions"
-version = "0.1.5"
+version = "0.1.7"
 description = "A fast and elegant Python library for adding beautiful captions to videos"
 readme = "README.md"
 authors = [

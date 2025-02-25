@@ -2,9 +2,9 @@
 
 import logging
 from pathlib import Path
-from typing import Optional, Union, Literal
+from typing import Optional, Union, Literal, Dict, Any
 
-from .config import CaptionConfig
+from .config import CaptionConfig, StyleConfig
 from .video import Video
 from ..transcription.assemblyai import AssemblyAIService
 from ..transcription.base import TranscriptionService
@@ -50,7 +50,8 @@ async def process_video(
     transcribe_with: ServiceType,
     api_key: str,
     output_path: Optional[Union[str, Path]] = None,
-    config: Optional[CaptionConfig] = None
+    config: Optional[CaptionConfig] = None,
+    style: Optional[Union[str, Dict[str, Any], StyleConfig]] = None
 ) -> Path:
     """Process a video by transcribing and adding captions.
     
@@ -60,10 +61,34 @@ async def process_video(
         api_key: API key for transcription service
         output_path: Path for output video (optional)
         config: Caption configuration (optional)
+        style: Style configuration - can be a preset name, StyleConfig object, 
+               or dict of style parameters (optional)
         
     Returns:
         Path to output video file
+        
+    Note:
+        If both config and style are provided, style will be ignored.
     """
+    # If config is not provided but style is, create a config with the style
+    if config is None and style is not None:
+        if isinstance(style, str):
+            # Handle preset style names
+            style_config = StyleConfig()
+            # You could implement preset styles here
+            # For example: if style == "tiktok": style_config = TikTokStyle()
+        elif isinstance(style, dict):
+            # Convert dict to StyleConfig
+            style_config = StyleConfig(**style)
+        elif isinstance(style, StyleConfig):
+            # Use the provided StyleConfig directly
+            style_config = style
+        else:
+            raise TypeError("Style must be a string, dictionary, or StyleConfig object")
+            
+        # Create a new config with the specified style and default settings for other options
+        config = CaptionConfig(style=style_config)
+    
     service = create_transcription_service(transcribe_with, api_key)
     
     with Video(video_path, config) as video:
@@ -74,7 +99,8 @@ def add_captions(
     video_path: Union[str, Path],
     srt_path: Union[str, Path],
     output_path: Optional[Union[str, Path]] = None,
-    config: Optional[CaptionConfig] = None
+    config: Optional[CaptionConfig] = None,
+    style: Optional[Union[str, Dict[str, Any], StyleConfig]] = None
 ) -> Path:
     """Add captions to a video using an existing SRT file.
     
@@ -83,10 +109,33 @@ def add_captions(
         srt_path: Path to SRT file
         output_path: Path for output video (optional)
         config: Caption configuration (optional)
+        style: Style configuration - can be a preset name, StyleConfig object, 
+               or dict of style parameters (optional)
         
     Returns:
         Path to output video file
+        
+    Note:
+        If both config and style are provided, style will be ignored.
     """
+    # If config is not provided but style is, create a config with the style
+    if config is None and style is not None:
+        if isinstance(style, str):
+            # Handle preset style names
+            style_config = StyleConfig()
+            # You could implement preset styles here
+        elif isinstance(style, dict):
+            # Convert dict to StyleConfig
+            style_config = StyleConfig(**style)
+        elif isinstance(style, StyleConfig):
+            # Use the provided StyleConfig directly
+            style_config = style
+        else:
+            raise TypeError("Style must be a string, dictionary, or StyleConfig object")
+            
+        # Create a new config with the specified style and default settings for other options
+        config = CaptionConfig(style=style_config)
+    
     with Video(video_path, config) as video:
         with open(srt_path, 'r', encoding='utf-8') as f:
             srt_content = f.read()
@@ -101,7 +150,8 @@ async def extract_subtitles(
     transcribe_with: ServiceType,
     api_key: str,
     output_path: Optional[Union[str, Path]] = None,
-    config: Optional[CaptionConfig] = None
+    config: Optional[CaptionConfig] = None,
+    style: Optional[Union[str, Dict[str, Any], StyleConfig]] = None
 ) -> Path:
     """Extract subtitles from a video without creating a new video.
     
@@ -111,10 +161,33 @@ async def extract_subtitles(
         api_key: API key for transcription service
         output_path: Path for output SRT file (optional)
         config: Caption configuration (optional)
+        style: Style configuration - can be a preset name, StyleConfig object, 
+               or dict of style parameters (optional)
         
     Returns:
         Path to output SRT file
+        
+    Note:
+        If both config and style are provided, style will be ignored.
     """
+    # If config is not provided but style is, create a config with the style
+    if config is None and style is not None:
+        if isinstance(style, str):
+            # Handle preset style names
+            style_config = StyleConfig()
+            # You could implement preset styles here
+        elif isinstance(style, dict):
+            # Convert dict to StyleConfig
+            style_config = StyleConfig(**style)
+        elif isinstance(style, StyleConfig):
+            # Use the provided StyleConfig directly
+            style_config = style
+        else:
+            raise TypeError("Style must be a string, dictionary, or StyleConfig object")
+            
+        # Create a new config with the specified style and default settings for other options
+        config = CaptionConfig(style=style_config)
+    
     service = create_transcription_service(transcribe_with, api_key)
     
     if not output_path:
@@ -132,7 +205,8 @@ def caption_stream(
     video_path: Union[str, Path],
     srt_content: str,
     output_path: Optional[Union[str, Path]] = None,
-    config: Optional[CaptionConfig] = None
+    config: Optional[CaptionConfig] = None,
+    style: Optional[Union[str, Dict[str, Any], StyleConfig]] = None
 ) -> Path:
     """Add captions to a video using SRT content directly.
     
@@ -141,10 +215,33 @@ def caption_stream(
         srt_content: SRT subtitle content as string
         output_path: Path for output video (optional)
         config: Caption configuration (optional)
+        style: Style configuration - can be a preset name, StyleConfig object, 
+               or dict of style parameters (optional)
         
     Returns:
         Path to output video file
+        
+    Note:
+        If both config and style are provided, style will be ignored.
     """
+    # If config is not provided but style is, create a config with the style
+    if config is None and style is not None:
+        if isinstance(style, str):
+            # Handle preset style names
+            style_config = StyleConfig()
+            # You could implement preset styles here
+        elif isinstance(style, dict):
+            # Convert dict to StyleConfig
+            style_config = StyleConfig(**style)
+        elif isinstance(style, StyleConfig):
+            # Use the provided StyleConfig directly
+            style_config = style
+        else:
+            raise TypeError("Style must be a string, dictionary, or StyleConfig object")
+            
+        # Create a new config with the specified style and default settings for other options
+        config = CaptionConfig(style=style_config)
+    
     with Video(video_path, config) as video:
         return video.add_captions(
             srt_content=srt_content,

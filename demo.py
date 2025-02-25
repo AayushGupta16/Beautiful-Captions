@@ -21,14 +21,18 @@ load_dotenv()
 
 async def demo_transcription():
     # Configuration
+
     style = StyleConfig(
         font="Montserrat",
         color="white",
+        font_size="140",
         outline_color="black",
         outline_thickness=2,
         verticle_position=0.5,  
         horizontal_position=0.5,  
-        font_size=200
+        max_words_per_line=1,
+        auto_scale_font=True,
+        font_size=200,
     )
     
     animation = AnimationConfig(
@@ -48,6 +52,7 @@ async def demo_transcription():
     # Method 1: Process video with automatic transcription
     output_path = await process_video(
         video_path="input.mp4",
+        output_path="output.mp4",
         transcribe_with="assemblyai",
         api_key=os.getenv("ASSEMBLYAI_API_KEY"),
         config=config
