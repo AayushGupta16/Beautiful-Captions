@@ -1,10 +1,10 @@
 [build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
+requires = ["setuptools>=42", "wheel"]
+build-backend = "setuptools.build_meta"
 
 [project]
 name = "beautiful-captions"
-version = "0.1.0"
+version = "0.1.4"
 description = "A fast and elegant Python library for adding beautiful captions to videos"
 readme = "README.md"
 authors = [
@@ -38,7 +38,4 @@ Homepage = "https://github.com/aayushgupta16/beautiful-captions"
 Repository = "https://github.com/aayushgupta16/beautiful-captions.git"
 Documentation = "https://beautiful-captions.readthedocs.io/"
 "Bug Tracker" = "https://github.com/aayushgupta16/beautiful-captions/issues"
-
-[tool.hatch.build]
-packages = ["src/beautiful_captions"]
 

@@ -7,7 +7,7 @@ A fast and elegant Python library for adding beautiful captions to videos. Combi
 - ⚡ Lightning-fast caption rendering
 - 🎨 Beautiful default styling with customization options
 - 💃 Engaging bounce animation for captions
-- 🤖 Built-in support for AssemblyAI, Deepgram, and OpenAI transcription
+- 🤖 Built-in support for AssemblyAI
 - 📝 Support for SRT files
 - 🛠️ Simple, intuitive API
 
@@ -84,12 +84,6 @@ Beautiful Captions supports multiple transcription services out of the box:
 ```python
 # Using AssemblyAI
 video.transcribe(service="assemblyai", api_key="YOUR_ASSEMBLYAI_KEY")
-
-# Using Deepgram
-video.transcribe(service="deepgram", api_key="YOUR_DEEPGRAM_KEY")
-
-# Using OpenAI
-video.transcribe(service="openai", api_key="YOUR_OPENAI_KEY")
 ```
 
 ## Performance

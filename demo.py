@@ -5,6 +5,7 @@
 #TODO: need to figure out how to stop generating the Speaker labels because they're not needed probably
 #TODO: I should have a configurable output path
 #TODO: I should generate all temp files in a temp directory
+#TODO: Need to fix benchmarking so that the moviepy captions are correct and not wack
 
 import asyncio
 import os
