@@ -167,6 +167,7 @@ def style_srt_content(
     
     # Track speakers and their assigned colors
     speaker_colors = {}
+    default_color_index = 0  # For subtitles without speaker labels
     
     # Process each subtitle
     for i, sub in enumerate(subs):
@@ -185,14 +186,16 @@ def style_srt_content(
             
             color = speaker_colors[speaker_label]
         else:
-            # Fallback if no speaker label found
-            color = colors[0]
+            # For text without speaker label, still try to maintain consistent colors
+            # Check if this might be a continuation from a known speaker
+            # For now, just use the default color
+            color = colors[default_color_index % len(colors)]
         
-        # Apply color formatting
+        # Apply color formatting if enabled
         if encode_speaker_colors:
             text = f'<font color="{color}">{text}</font>'
         
-        # Add speaker label back if requested
+        # Add speaker label back only if requested
         if keep_speaker_labels and speaker_label:
             text = f"{speaker_label}: {text}"
         
