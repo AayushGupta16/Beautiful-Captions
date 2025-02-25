@@ -167,11 +167,22 @@ def style_srt_content(
     
     # Track speakers and their assigned colors
     speaker_colors = {}
-    default_color_index = 0  # For subtitles without speaker labels
+    subtitle_to_speaker = {}  # Map subtitle indices to speakers
     
-    # Process each subtitle
+    # First pass: Identify all speakers and assign colors
     for i, sub in enumerate(subs):
-        # Extract speaker label if present
+        text = sub.text
+        speaker_match = re.match(r'^(Speaker [A-Z]+):\s*(.*)', text)
+        
+        if speaker_match:
+            speaker_label = speaker_match.group(1)
+            if speaker_label not in speaker_colors:
+                speaker_colors[speaker_label] = colors[len(speaker_colors) % len(colors)]
+            # Store which speaker this subtitle belongs to
+            subtitle_to_speaker[i] = speaker_label
+    
+    # Second pass: Apply colors and format text
+    for i, sub in enumerate(subs):
         text = sub.text
         speaker_label = ""
         speaker_match = re.match(r'^(Speaker [A-Z]+):\s*(.*)', text)
@@ -180,16 +191,16 @@ def style_srt_content(
             speaker_label = speaker_match.group(1)
             text = speaker_match.group(2)
             
-            # Assign color based on speaker identity
-            if speaker_label not in speaker_colors:
-                speaker_colors[speaker_label] = colors[len(speaker_colors) % len(colors)]
-            
-            color = speaker_colors[speaker_label]
+            # Get the color assigned to this speaker
+            color = speaker_colors.get(speaker_label, colors[0])
         else:
-            # For text without speaker label, still try to maintain consistent colors
-            # Check if this might be a continuation from a known speaker
-            # For now, just use the default color
-            color = colors[default_color_index % len(colors)]
+            # If no speaker label in this subtitle, see if we know which speaker it belongs to
+            speaker_label = subtitle_to_speaker.get(i)
+            if speaker_label and speaker_label in speaker_colors:
+                color = speaker_colors[speaker_label]
+            else:
+                # Default to first color if we can't determine the speaker
+                color = colors[0]
         
         # Apply color formatting if enabled
         if encode_speaker_colors:

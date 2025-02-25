@@ -3,8 +3,7 @@
 import logging
 from pathlib import Path
 from typing import Optional, Union, Literal, Dict, Any
-
-from .config import CaptionConfig, StyleConfig
+from .config import CaptionConfig, StyleConfig, DiarizationConfig
 from .video import Video
 from ..transcription.assemblyai import AssemblyAIService
 from ..transcription.base import TranscriptionService
@@ -83,7 +82,15 @@ async def process_video(
             style_config = style
         else:
             raise TypeError("Style must be a string, dictionary, or StyleConfig object")
-        config = CaptionConfig(style=style_config)
+        
+        # Create config with diarization explicitly enabled for coloring
+        config = CaptionConfig(
+            style=style_config,
+            diarization=DiarizationConfig(
+                enabled=True,  # Enable diarization for color assignment
+                keep_speaker_labels=False  # Don't show speaker labels by default
+            )
+        )
     
     service = create_transcription_service(transcribe_with, api_key)
     
