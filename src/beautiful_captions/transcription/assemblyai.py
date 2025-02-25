@@ -4,6 +4,7 @@ import logging
 from typing import List
 import assemblyai as aai
 from datetime import timedelta
+import asyncio
 
 from .base import TranscriptionService, Utterance, Word
 
@@ -43,15 +44,45 @@ class AssemblyAIService(TranscriptionService):
         )
         
         try:
+            # Set a longer timeout for the transcription process
             transcriber = aai.Transcriber(config=config)
-            transcript = transcriber.transcribe(audio_path)
             
-            if transcript.status != "completed":
-                raise Exception(f"Transcription failed with status: {transcript.status}")
+            # First upload the file and get a transcript object
+            transcript = transcriber.submit(audio_path)
+            
+            # Then poll for completion with a timeout
+            max_wait_time = 600  # 10 minutes max wait time
+            poll_interval = 5    # Check every 5 seconds
+            wait_time = 0
+            
+            logger.info("Waiting for AssemblyAI transcription to complete...")
+            while wait_time < max_wait_time:
+                # Get the latest status
+                transcript_status = transcript.status()
+                
+                if transcript_status.status == "completed":
+                    logger.info("Transcription completed successfully")
+                    break
+                elif transcript_status.status == "error":
+                    raise Exception(f"Transcription failed with error: {transcript_status.error}")
+                
+                # Wait before polling again
+                await asyncio.sleep(poll_interval)
+                wait_time += poll_interval
+                logger.info(f"Waiting for transcription... ({wait_time}s elapsed)")
+            
+            if wait_time >= max_wait_time:
+                raise Exception("Transcription timed out after waiting for 10 minutes")
+            
+            # Get the completed transcript
+            completed_transcript = transcript.get()
+            
+            if completed_transcript.status != "completed":
+                raise Exception(f"Transcription failed with status: {completed_transcript.status}")
             
             utterances: List[Utterance] = []
             
-            for u in transcript.utterances:
+            for u in completed_transcript.utterances:
                 words = [
                     Word(
                         text=w.text,
