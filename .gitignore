@@ -1,5 +1,6 @@
 # Python
 __pycache__/
+./deploy.sh
 *.py[cod]
 *$py.class
 *.so

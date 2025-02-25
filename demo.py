@@ -25,14 +25,13 @@ async def demo_transcription():
     style = StyleConfig(
         font="Montserrat",
         color="white",
-        font_size="140",
+        font_size=140,
         outline_color="black",
         outline_thickness=2,
         verticle_position=0.5,  
         horizontal_position=0.5,  
         max_words_per_line=1,
         auto_scale_font=True,
-        font_size=200,
     )
     
     animation = AnimationConfig(
