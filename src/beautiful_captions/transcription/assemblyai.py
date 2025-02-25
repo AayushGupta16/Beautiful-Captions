@@ -47,8 +47,28 @@ class AssemblyAIService(TranscriptionService):
             # Set a longer timeout for the transcription process
             transcriber = aai.Transcriber(config=config)
             
-            # First upload the file and get a transcript object
-            transcript = transcriber.submit(audio_path)
+            # First upload the file and get a transcript object - with retry logic
+            max_retries = 3
+            retry_delay = 5  # seconds
+            last_exception = None
+            
+            for attempt in range(max_retries):
+                try:
+                    logger.info(f"Submitting transcription job (attempt {attempt+1}/{max_retries})...")
+                    # Configure the AssemblyAI client with a longer timeout
+                    aai.settings.timeout = 120  # 2 minutes timeout for HTTP requests
+                    transcript = transcriber.submit(audio_path)
+                    break
+                except Exception as e:
+                    last_exception = e
+                    logger.warning(f"Transcription submission failed (attempt {attempt+1}): {str(e)}")
+                    if attempt < max_retries - 1:
+                        logger.info(f"Retrying in {retry_delay} seconds...")
+                        await asyncio.sleep(retry_delay)
+                        retry_delay *= 2  # Exponential backoff
+                    else:
+                        logger.error("All retry attempts failed")
+                        raise
             
             # Then poll for completion with a timeout
             max_wait_time = 600  # 10 minutes max wait time
@@ -58,13 +78,17 @@ class AssemblyAIService(TranscriptionService):
             logger.info("Waiting for AssemblyAI transcription to complete...")
             while wait_time < max_wait_time:
                 # Get the latest status
-                transcript_status = transcript.status()
-                
-                if transcript_status.status == "completed":
-                    logger.info("Transcription completed successfully")
-                    break
-                elif transcript_status.status == "error":
-                    raise Exception(f"Transcription failed with error: {transcript_status.error}")
+                try:
+                    transcript_status = transcript.status()
+                    
+                    if transcript_status.status == "completed":
+                        logger.info("Transcription completed successfully")
+                        break
+                    elif transcript_status.status == "error":
+                        raise Exception(f"Transcription failed with error: {transcript_status.error}")
+                except Exception as e:
+                    logger.warning(f"Error checking transcription status: {str(e)}")
+                    # Continue polling despite status check errors
                 
                 # Wait before polling again
                 await asyncio.sleep(poll_interval)
