@@ -61,7 +61,7 @@ class Video:
             self._audio_path = self.video_path.with_suffix('.aac')
             extract_audio(self.video_path, self._audio_path)
         
-        self._utterances = service.transcribe(str(self._audio_path), max_speakers)
+        self._utterances = await service.transcribe(str(self._audio_path), max_speakers)
         self._srt_content = service.to_srt(
             self._utterances, 
             self.config.diarization.colors,

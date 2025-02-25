@@ -1,8 +1,9 @@
 import logging
-import time  # Changed from asyncio
+import time  
 from typing import List
 import assemblyai as aai
 from datetime import timedelta
+
 
 from .base import TranscriptionService, Utterance, Word
 
@@ -12,28 +13,16 @@ class AssemblyAIService(TranscriptionService):
     """AssemblyAI transcription service implementation."""
     
     def __init__(self, api_key: str):
-        """Initialize AssemblyAI client.
-        
-        Args:
-            api_key: AssemblyAI API key
-        """
+        """Initialize AssemblyAI client."""
         super().__init__(api_key)
         aai.settings.api_key = api_key
         
-    def transcribe(  
+    async def transcribe( 
         self,
         audio_path: str,
         max_speakers: int = 3
     ) -> List[Utterance]:
-        """Transcribe audio using AssemblyAI.
-        
-        Args:
-            audio_path: Path to audio file
-            max_speakers: Maximum number of speakers to detect
-            
-        Returns:
-            List of utterances with timing and speaker information
-        """
+        """Transcribe audio using AssemblyAI."""
         logger.info(f"Transcribing audio with AssemblyAI: {audio_path}")
         
         config = aai.TranscriptionConfig(
@@ -45,76 +34,35 @@ class AssemblyAIService(TranscriptionService):
             # Set up the transcriber with config
             transcriber = aai.Transcriber(config=config)
             
-            # Add debug logging for file
-            logger.info(f"Submitting file for transcription: {audio_path}")
-            
             # First upload the file and get a transcript object - with retry logic
             max_retries = 3
             retry_delay = 5  # seconds
-            last_exception = None
+            transcript = None
             
             for attempt in range(max_retries):
                 try:
                     logger.info(f"Submitting transcription job (attempt {attempt+1}/{max_retries})...")
-                    # Use the transcriber directly without setting timeout on settings
-                    transcript = transcriber.submit(audio_path)
                     
-                    # Log the audio URL to help diagnose issues
-                    logger.info(f"File submitted successfully. Audio URL: {transcript.audio_url}")
+                    # Use transcribe method instead of submit for simplicity
+                    transcript = transcriber.transcribe(audio_path)
+                    logger.info(f"Transcription complete, status: {transcript.status}")
                     break
                 except Exception as e:
-                    last_exception = e
-                    logger.warning(f"Transcription submission failed (attempt {attempt+1}): {str(e)}")
+                    logger.error(f"Transcription failed (attempt {attempt+1}): {str(e)}")
                     if attempt < max_retries - 1:
                         logger.info(f"Retrying in {retry_delay} seconds...")
-                        time.sleep(retry_delay)  # Changed from await asyncio.sleep
-                        retry_delay *= 2  # Exponential backoff
+                        time.sleep(retry_delay)
+                        retry_delay *= 2
                     else:
                         logger.error("All retry attempts failed")
                         raise
             
-            # Then poll for completion with a timeout
-            max_wait_time = 600  # 10 minutes max wait time
-            poll_interval = 5    # Check every 5 seconds
-            wait_time = 0
-            
-            logger.info("Waiting for AssemblyAI transcription to complete...")
-            while wait_time < max_wait_time:
-                # Get the latest status
-                try:
-                    # Access the status directly without trying to access a nested property
-                    status = transcript.status
-                    
-                    logger.info(f"Current transcription status: {status}")
-                    
-                    if status == "completed":
-                        logger.info("Transcription completed successfully")
-                        break
-                    elif status == "error":
-                        error_msg = getattr(transcript, "error", "Unknown error")
-                        raise Exception(f"Transcription failed with error: {error_msg}")
-                except Exception as e:
-                    logger.warning(f"Error checking transcription status: {str(e)}")
-                    # Continue polling despite status check errors
-                
-                # Wait before polling again
-                time.sleep(poll_interval)  # Changed from await asyncio.sleep
-                wait_time += poll_interval
-                logger.info(f"Waiting for transcription... ({wait_time}s elapsed)")
-            
-            if wait_time >= max_wait_time:
-                raise Exception("Transcription timed out after waiting for 10 minutes")
-            
-            # Get the completed transcript
-            completed_transcript = transcript.get()
-            
-            # Update to access status directly
-            if completed_transcript.status != "completed":
-                raise Exception(f"Transcription failed with status: {completed_transcript.status}")
+            if not transcript or transcript.status != "completed":
+                raise Exception(f"Transcription failed with status: {getattr(transcript, 'status', 'None')}")
             
             utterances: List[Utterance] = []
             
-            for u in completed_transcript.utterances:
+            for u in transcript.utterances:
                 words = [
                     Word(
                         text=w.text,
