@@ -78,13 +78,15 @@ class AssemblyAIService(TranscriptionService):
             while wait_time < max_wait_time:
                 # Get the latest status
                 try:
-                    transcript_status = transcript.status
+                    # Access the status directly without trying to access a nested property
+                    status = transcript.status
                     
-                    if transcript_status.status == "completed":
+                    if status == "completed":
                         logger.info("Transcription completed successfully")
                         break
-                    elif transcript_status.status == "error":
-                        raise Exception(f"Transcription failed with error: {transcript_status.error}")
+                    elif status == "error":
+                        error_msg = getattr(transcript, "error", "Unknown error")
+                        raise Exception(f"Transcription failed with error: {error_msg}")
                 except Exception as e:
                     logger.warning(f"Error checking transcription status: {str(e)}")
                     # Continue polling despite status check errors
@@ -100,9 +102,9 @@ class AssemblyAIService(TranscriptionService):
             # Get the completed transcript
             completed_transcript = transcript.get()
             
-            # Update to access status property correctly
-            if completed_transcript.status.status != "completed":
-                raise Exception(f"Transcription failed with status: {completed_transcript.status.status}")
+            # Update to access status directly
+            if completed_transcript.status != "completed":
+                raise Exception(f"Transcription failed with status: {completed_transcript.status}")
             
             utterances: List[Utterance] = []
             
