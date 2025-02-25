@@ -53,6 +53,7 @@ async def demo_transcription():
         output_path="output.mp4",
         transcribe_with="assemblyai",
         api_key=os.getenv("ASSEMBLYAI_API_KEY"),
+        srt_output_path=None,
         config=config
     )
     print(f"Processed video saved to: {output_path}")
