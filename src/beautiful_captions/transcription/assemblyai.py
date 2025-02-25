@@ -1,9 +1,9 @@
 import logging
-import time  
+import os
 from typing import List
 import assemblyai as aai
 from datetime import timedelta
-
+import asyncio
 
 from .base import TranscriptionService, Utterance, Word
 
@@ -17,7 +17,7 @@ class AssemblyAIService(TranscriptionService):
         super().__init__(api_key)
         aai.settings.api_key = api_key
         
-    async def transcribe( 
+    async def transcribe(
         self,
         audio_path: str,
         max_speakers: int = 3
@@ -25,66 +25,60 @@ class AssemblyAIService(TranscriptionService):
         """Transcribe audio using AssemblyAI."""
         logger.info(f"Transcribing audio with AssemblyAI: {audio_path}")
         
+        # Check if file exists and log details for debugging
+        if not os.path.exists(audio_path):
+            raise FileNotFoundError(f"Audio file not found: {audio_path}")
+            
+        logger.info(f"Audio file size: {os.path.getsize(audio_path)} bytes")
+        
         config = aai.TranscriptionConfig(
             speaker_labels=True,
             speakers_expected=max_speakers
         )
         
         try:
-            # Set up the transcriber with config
-            transcriber = aai.Transcriber(config=config)
-            
-            # First upload the file and get a transcript object - with retry logic
-            max_retries = 3
-            retry_delay = 5  # seconds
-            transcript = None
-            
-            for attempt in range(max_retries):
-                try:
-                    logger.info(f"Submitting transcription job (attempt {attempt+1}/{max_retries})...")
-                    
-                    # Use transcribe method instead of submit for simplicity
-                    transcript = transcriber.transcribe(audio_path)
-                    logger.info(f"Transcription complete, status: {transcript.status}")
-                    break
-                except Exception as e:
-                    logger.error(f"Transcription failed (attempt {attempt+1}): {str(e)}")
-                    if attempt < max_retries - 1:
-                        logger.info(f"Retrying in {retry_delay} seconds...")
-                        time.sleep(retry_delay)
-                        retry_delay *= 2
-                    else:
-                        logger.error("All retry attempts failed")
-                        raise
-            
-            if not transcript or transcript.status != "completed":
-                raise Exception(f"Transcription failed with status: {getattr(transcript, 'status', 'None')}")
-            
-            utterances: List[Utterance] = []
-            
-            for u in transcript.utterances:
-                words = [
-                    Word(
-                        text=w.text,
-                        start=w.start,
-                        end=w.end
-                    )
-                    for w in u.words
-                ]
-                
-                utterance = Utterance(
-                    speaker=f"Speaker {u.speaker}",
-                    words=words,
-                    start=u.start,
-                    end=u.end
-                )
-                utterances.append(utterance)
-            
-            return utterances
+            # Handle the synchronous SDK in an async context
+            return await asyncio.to_thread(self._transcribe_sync, audio_path, config)
             
         except Exception as e:
             logger.error(f"AssemblyAI transcription failed: {str(e)}")
             raise
+    
+    def _transcribe_sync(self, audio_path: str, config: aai.TranscriptionConfig) -> List[Utterance]:
+        """Synchronous implementation that will be run in a separate thread."""
+        transcriber = aai.Transcriber(config=config)
+        
+        # Use the direct transcribe method which handles submission and polling
+        logger.info(f"Starting transcription of {audio_path}")
+        transcript = transcriber.transcribe(audio_path)
+        
+        logger.info(f"Transcription complete, status: {getattr(transcript, 'status', 'unknown')}")
+        
+        if not transcript or transcript.status != "completed":
+            logger.error(f"Transcription failed with status: {getattr(transcript, 'status', 'None')}")
+            raise Exception(f"Transcription failed with status: {getattr(transcript, 'status', 'None')}")
+        
+        utterances: List[Utterance] = []
+        
+        for u in transcript.utterances:
+            words = [
+                Word(
+                    text=w.text,
+                    start=w.start,
+                    end=w.end
+                )
+                for w in u.words
+            ]
+            
+            utterance = Utterance(
+                speaker=f"Speaker {u.speaker}",
+                words=words,
+                start=u.start,
+                end=u.end
+            )
+            utterances.append(utterance)
+        
+        return utterances
             
     def to_srt(self, utterances: List[Utterance], speaker_colors: List[str], max_words_per_line: int = 1, include_speaker_labels: bool = True) -> str:
         """Convert utterances to plain SRT format.

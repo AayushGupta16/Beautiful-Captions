@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="beautiful-captions",
-    version="0.1.16",
+    version="0.1.17",
     package_dir={"": "src"},
     packages=find_packages(where="src"),
     include_package_data=True,
