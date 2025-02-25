@@ -29,7 +29,6 @@ async def demo_transcription():
         outline_color="black",
         outline_thickness=2,
         verticle_position=0.5,  
-        horizontal_position=0.5,  
         max_words_per_line=1,
         auto_scale_font=True,
     )

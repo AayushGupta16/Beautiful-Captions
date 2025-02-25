@@ -55,7 +55,7 @@ def create_ass_subtitles(
             f.write("[V4+ Styles]\n")
             f.write("Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding\n")
             
-            margin_v = int(height * style.verticle_position)  # Convert relative position to pixels
+            margin_v = int(height * (1 - style.verticle_position))  # Convert relative position to pixels
             
             # Write default style
             f.write(

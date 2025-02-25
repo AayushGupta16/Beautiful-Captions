@@ -5,10 +5,9 @@ from typing import List, Optional
 class StyleConfig:
     font: str = "Montserrat"
     verticle_position: float = 0.5
-    horizontal_position: float = 0.5
     color: str = "white"
     outline_color: str = "black"
-    outline_thickness: int = 2
+    outline_thickness: int = 10
     font_size: int = 140
     max_words_per_line: int = 1  
     auto_scale_font: bool = True  
