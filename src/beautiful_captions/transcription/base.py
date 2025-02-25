@@ -20,7 +20,7 @@ class TranscriptionService(ABC):
         self.api_key = api_key
 
     @abstractmethod
-    async def transcribe(self, audio_path: str, max_speakers: int = 3) -> List[Utterance]:
+    def transcribe(self, audio_path: str, max_speakers: int = 3) -> List[Utterance]:
         """
         Transcribe audio file and return list of utterances with speaker diarization
         """

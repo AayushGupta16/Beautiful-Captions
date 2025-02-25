@@ -1,70 +1,73 @@
-import os
 import logging
+import time  # Changed from asyncio
 from typing import List
 import assemblyai as aai
 from datetime import timedelta
-import time  # Use time instead of asyncio
 
 from .base import TranscriptionService, Utterance, Word
 
 logger = logging.getLogger(__name__)
 
 class AssemblyAIService(TranscriptionService):
-    """
-    Transcription service using AssemblyAI
-    """
+    """AssemblyAI transcription service implementation."""
     
     def __init__(self, api_key: str):
-        """
-        Initialize the AssemblyAI service
+        """Initialize AssemblyAI client.
         
         Args:
             api_key: AssemblyAI API key
         """
-        self.api_key = api_key
+        super().__init__(api_key)
+        aai.settings.api_key = api_key
         
-    def transcribe(self, audio_path: str, diarize: bool = False, speaker_count: int = None) -> List[Utterance]:
-        """
-        Transcribe audio using AssemblyAI
+    def transcribe(  
+        self,
+        audio_path: str,
+        max_speakers: int = 3
+    ) -> List[Utterance]:
+        """Transcribe audio using AssemblyAI.
         
         Args:
             audio_path: Path to audio file
-            diarize: Whether to enable speaker diarization
-            speaker_count: Optional number of speakers (None for auto-detection)
+            max_speakers: Maximum number of speakers to detect
             
         Returns:
-            List of utterances
+            List of utterances with timing and speaker information
         """
+        logger.info(f"Transcribing audio with AssemblyAI: {audio_path}")
         
-        # Create configuration
         config = aai.TranscriptionConfig(
-            speaker_labels=diarize,
-            speakers_expected=speaker_count,
-            punctuate=True,
-            format_text=True,
-            speech_model="best tier",
+            speaker_labels=True,
+            speakers_expected=max_speakers
         )
         
         try:
             # Set up the transcriber with config
             transcriber = aai.Transcriber(config=config)
             
+            # Add debug logging for file
+            logger.info(f"Submitting file for transcription: {audio_path}")
+            
             # First upload the file and get a transcript object - with retry logic
             max_retries = 3
             retry_delay = 5  # seconds
-            transcript = None
+            last_exception = None
             
             for attempt in range(max_retries):
                 try:
                     logger.info(f"Submitting transcription job (attempt {attempt+1}/{max_retries})...")
-                    # Use the transcriber directly
+                    # Use the transcriber directly without setting timeout on settings
                     transcript = transcriber.submit(audio_path)
+                    
+                    # Log the audio URL to help diagnose issues
+                    logger.info(f"File submitted successfully. Audio URL: {transcript.audio_url}")
                     break
                 except Exception as e:
+                    last_exception = e
                     logger.warning(f"Transcription submission failed (attempt {attempt+1}): {str(e)}")
                     if attempt < max_retries - 1:
                         logger.info(f"Retrying in {retry_delay} seconds...")
-                        time.sleep(retry_delay)  # Use time.sleep instead of await asyncio.sleep
+                        time.sleep(retry_delay)  # Changed from await asyncio.sleep
                         retry_delay *= 2  # Exponential backoff
                     else:
                         logger.error("All retry attempts failed")
@@ -82,6 +85,8 @@ class AssemblyAIService(TranscriptionService):
                     # Access the status directly without trying to access a nested property
                     status = transcript.status
                     
+                    logger.info(f"Current transcription status: {status}")
+                    
                     if status == "completed":
                         logger.info("Transcription completed successfully")
                         break
@@ -92,8 +97,8 @@ class AssemblyAIService(TranscriptionService):
                     logger.warning(f"Error checking transcription status: {str(e)}")
                     # Continue polling despite status check errors
                 
-                # Wait before polling again - use time.sleep
-                time.sleep(poll_interval)
+                # Wait before polling again
+                time.sleep(poll_interval)  # Changed from await asyncio.sleep
                 wait_time += poll_interval
                 logger.info(f"Waiting for transcription... ({wait_time}s elapsed)")
             
@@ -113,24 +118,19 @@ class AssemblyAIService(TranscriptionService):
                 words = [
                     Word(
                         text=w.text,
-                        start=timedelta(milliseconds=w.start),
-                        end=timedelta(milliseconds=w.end)
+                        start=w.start,
+                        end=w.end
                     )
                     for w in u.words
                 ]
                 
-                # Use speaker label if available, otherwise "Speaker 0"
-                speaker = u.speaker or "Speaker 0"
-                
-                utterances.append(
-                    Utterance(
-                        text=u.text,
-                        start=timedelta(milliseconds=u.start),
-                        end=timedelta(milliseconds=u.end),
-                        speaker=speaker,
-                        words=words
-                    )
+                utterance = Utterance(
+                    speaker=f"Speaker {u.speaker}",
+                    words=words,
+                    start=u.start,
+                    end=u.end
                 )
+                utterances.append(utterance)
             
             return utterances
             
@@ -150,52 +150,53 @@ class AssemblyAIService(TranscriptionService):
         Returns:
             SRT formatted string with speaker labels
         """
-        # The rest of the method remains unchanged
+        from ..utils.subtitles import group_words_into_lines
+        
         srt_content = ""
         subtitle_index = 1
         
         for utterance in utterances:
-            # Determine how to split words into lines
-            if max_words_per_line > 1 and utterance.words:
-                word_index = 0
+            # Group words by max_words_per_line
+            if max_words_per_line > 1:
+                # Group words by their text
+                word_texts = [word.text for word in utterance.words]
+                grouped_lines = group_words_into_lines(word_texts, max_words_per_line)
                 
-                while word_index < len(utterance.words):
-                    # Calculate how many words to include in this line
-                    remaining_words = len(utterance.words) - word_index
-                    line_word_count = min(max_words_per_line, remaining_words)
-                    
-                    # Extract the words for this line
-                    line_words = utterance.words[word_index:word_index + line_word_count]
-                    line = " ".join([w.text for w in line_words])
-                    
-                    # Get timing for this line
-                    start = line_words[0].start
-                    end = line_words[-1].end
-                    
-                    # Format the timing
-                    start_str = f"{start.total_seconds()//3600:02.0f}:{(start.total_seconds()//60)%60:02.0f}:{start.total_seconds()%60:06.3f}".replace(".", ",")
-                    end_str = f"{end.total_seconds()//3600:02.0f}:{(end.total_seconds()//60)%60:02.0f}:{end.total_seconds()%60:06.3f}".replace(".", ",")
-                    
-                    srt_content += f"{subtitle_index}\n"
-                    srt_content += f"{start_str} --> {end_str}\n"
-                    
-                    # Add speaker label if requested
-                    if include_speaker_labels:
-                        srt_content += f"{utterance.speaker}: {line}\n\n"
-                    else:
-                        srt_content += f"{line}\n\n"
-                    
-                    subtitle_index += 1
-                    word_index += line_word_count
+                # Create groups of words based on the lines
+                word_index = 0
+                for line in grouped_lines:
+                    line_word_count = len(line.split())
+                    if word_index + line_word_count <= len(utterance.words):
+                        group_start = utterance.words[word_index].start
+                        group_end = utterance.words[word_index + line_word_count - 1].end
+                        
+                        # Format times for SRT
+                        start_time = timedelta(milliseconds=group_start)
+                        end_time = timedelta(milliseconds=group_end)
+                        
+                        start_str = f"{start_time.seconds // 3600:02d}:{(start_time.seconds % 3600) // 60:02d}:{start_time.seconds % 60:02d},{start_time.microseconds // 1000:03d}"
+                        end_str = f"{end_time.seconds // 3600:02d}:{(end_time.seconds % 3600) // 60:02d}:{end_time.seconds % 60:02d},{end_time.microseconds // 1000:03d}"
+                        
+                        srt_content += f"{subtitle_index}\n"
+                        srt_content += f"{start_str} --> {end_str}\n"
+                        
+                        # Add speaker label if requested
+                        if include_speaker_labels:
+                            srt_content += f"{utterance.speaker}: {line}\n\n"
+                        else:
+                            srt_content += f"{line}\n\n"
+                        
+                        subtitle_index += 1
+                        word_index += line_word_count
             else:
-                # Use one subtitle per word
+                # Original single-word behavior
                 for word in utterance.words:
-                    # Format the timing
-                    start = word.start
-                    end = word.end
+                    start_time = timedelta(milliseconds=word.start)
+                    end_time = timedelta(milliseconds=word.end)
                     
-                    start_str = f"{start.total_seconds()//3600:02.0f}:{(start.total_seconds()//60)%60:02.0f}:{start.total_seconds()%60:06.3f}".replace(".", ",")
-                    end_str = f"{end.total_seconds()//3600:02.0f}:{(end.total_seconds()//60)%60:02.0f}:{end.total_seconds()%60:06.3f}".replace(".", ",")
+                    # Format times for SRT
+                    start_str = f"{start_time.seconds // 3600:02d}:{(start_time.seconds % 3600) // 60:02d}:{start_time.seconds % 60:02d},{start_time.microseconds // 1000:03d}"
+                    end_str = f"{end_time.seconds // 3600:02d}:{(end_time.seconds % 3600) // 60:02d}:{end_time.seconds % 60:02d},{end_time.microseconds // 1000:03d}"
                     
                     srt_content += f"{subtitle_index}\n"
                     srt_content += f"{start_str} --> {end_str}\n"
