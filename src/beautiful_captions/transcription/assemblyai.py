@@ -78,7 +78,7 @@ class AssemblyAIService(TranscriptionService):
             while wait_time < max_wait_time:
                 # Get the latest status
                 try:
-                    transcript_status = transcript.status()
+                    transcript_status = transcript.status
                     
                     if transcript_status.status == "completed":
                         logger.info("Transcription completed successfully")
@@ -100,8 +100,9 @@ class AssemblyAIService(TranscriptionService):
             # Get the completed transcript
             completed_transcript = transcript.get()
             
-            if completed_transcript.status != "completed":
-                raise Exception(f"Transcription failed with status: {completed_transcript.status}")
+            # Update to access status property correctly
+            if completed_transcript.status.status != "completed":
+                raise Exception(f"Transcription failed with status: {completed_transcript.status.status}")
             
             utterances: List[Utterance] = []
             
