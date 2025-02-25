@@ -65,7 +65,8 @@ class Video:
         self._srt_content = service.to_srt(
             self._utterances, 
             self.config.diarization.colors,
-            max_words_per_line=self.config.style.max_words_per_line
+            max_words_per_line=self.config.style.max_words_per_line,
+            include_speaker_labels=self.config.diarization.keep_speaker_labels
         )
         
     def add_captions(

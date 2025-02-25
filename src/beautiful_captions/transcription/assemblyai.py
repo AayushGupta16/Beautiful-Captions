@@ -75,13 +75,14 @@ class AssemblyAIService(TranscriptionService):
             logger.error(f"AssemblyAI transcription failed: {str(e)}")
             raise
             
-    def to_srt(self, utterances: List[Utterance], speaker_colors: List[str], max_words_per_line: int = 1) -> str:
+    def to_srt(self, utterances: List[Utterance], speaker_colors: List[str], max_words_per_line: int = 1, include_speaker_labels: bool = True) -> str:
         """Convert utterances to plain SRT format.
         
         Args:
             utterances: List of transcribed utterances
             speaker_colors: List of colors (used for speaker identification)
             max_words_per_line: Maximum number of words per line
+            include_speaker_labels: Whether to include speaker labels in the output
             
         Returns:
             SRT formatted string with speaker labels
@@ -115,7 +116,12 @@ class AssemblyAIService(TranscriptionService):
                         
                         srt_content += f"{subtitle_index}\n"
                         srt_content += f"{start_str} --> {end_str}\n"
-                        srt_content += f"{utterance.speaker}: {line}\n\n"
+                        
+                        # Add speaker label if requested
+                        if include_speaker_labels:
+                            srt_content += f"{utterance.speaker}: {line}\n\n"
+                        else:
+                            srt_content += f"{line}\n\n"
                         
                         subtitle_index += 1
                         word_index += line_word_count
@@ -131,7 +137,12 @@ class AssemblyAIService(TranscriptionService):
                     
                     srt_content += f"{subtitle_index}\n"
                     srt_content += f"{start_str} --> {end_str}\n"
-                    srt_content += f"{utterance.speaker}: {word.text}\n\n"
+                    
+                    # Add speaker label if requested
+                    if include_speaker_labels:
+                        srt_content += f"{utterance.speaker}: {word.text}\n\n"
+                    else:
+                        srt_content += f"{word.text}\n\n"
                     
                     subtitle_index += 1
                 

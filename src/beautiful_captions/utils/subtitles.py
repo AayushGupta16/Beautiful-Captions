@@ -165,12 +165,11 @@ def style_srt_content(
     subs = pysrt.from_string(srt_content)
     styled_content = ""
     
+    # Track speakers and their assigned colors
+    speaker_colors = {}
+    
     # Process each subtitle
     for i, sub in enumerate(subs):
-        # Get color for this subtitle (cycle through available colors)
-        color_index = i % len(colors)
-        color = colors[color_index]
-        
         # Extract speaker label if present
         text = sub.text
         speaker_label = ""
@@ -179,6 +178,15 @@ def style_srt_content(
         if speaker_match:
             speaker_label = speaker_match.group(1)
             text = speaker_match.group(2)
+            
+            # Assign color based on speaker identity
+            if speaker_label not in speaker_colors:
+                speaker_colors[speaker_label] = colors[len(speaker_colors) % len(colors)]
+            
+            color = speaker_colors[speaker_label]
+        else:
+            # Fallback if no speaker label found
+            color = colors[0]
         
         # Apply color formatting
         if encode_speaker_colors:
