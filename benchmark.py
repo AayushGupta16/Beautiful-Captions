@@ -135,8 +135,9 @@ def run_moviepy(test_video, output_video, animation_enabled):
             def make_frame(t):
                 scale_factor = bounce_scale(t % duration, duration, 80, 100)
                 txt_clip = (TextClip(sub.text, font="Montserrat", fontsize=scale_factor, 
-                                   color="white", method='label')
-                          .set_position("center"))
+                                   color="white", stroke_color="black", stroke_width=2,
+                                   method='caption', size=(clip.w, None))
+                          .set_position(('center', 'center')))
                 return txt_clip.get_frame(0)
             
             animated_txt = VideoClip(make_frame, duration=duration)
@@ -144,17 +145,18 @@ def run_moviepy(test_video, output_video, animation_enabled):
             subtitle_clips.append(animated_txt)
         else:
             txt = (TextClip(sub.text, font="Montserrat", fontsize=100, 
-                          color="white", method='label')
+                          color="white", stroke_color="black", stroke_width=2,
+                          method='caption', size=(clip.w, None))
                   .set_start(start_time)
                   .set_duration(duration)
-                  .set_position("center"))
+                  .set_position(('center', 'center')))
             subtitle_clips.append(txt)
     
     # Combine video with all subtitle clips
     final = CompositeVideoClip([clip] + subtitle_clips)
     final.write_videofile(output_video, codec="libx264", audio_codec="aac")
 
-def run_ffmpeg(test_video, output_video, animation_enabled):
+def run_ffmpeg(test_video, output_video):
     """
     Creates subtitles using FFmpeg's built-in subtitle filter.
     Note: animation_enabled is ignored as FFmpeg doesn't support animation.
@@ -178,7 +180,7 @@ def run_ffmpeg(test_video, output_video, animation_enabled):
         "-vf", f"ass={ass_path}",
         "-c:a", "copy",
         "-y",
-        output_path
+        output_video
     ]
     
     try:
@@ -268,7 +270,7 @@ def run_all_benchmarks():
 
     print("\nRunning FFmpeg (Basic Subtitles)...")
     res_ffmpeg = benchmark_function(
-        run_ffmpeg, test_video, ffmpeg_out, False
+        run_ffmpeg, test_video, ffmpeg_out
     )
 
     print("\nRunning Beautiful Captions (With Animation)...")

@@ -42,3 +42,9 @@ Documentation = "https://beautiful-captions.readthedocs.io/"
 [tool.hatch.build]
 packages = ["src/beautiful_captions"]
 
+[tool.hatch.metadata]
+allow-direct-references = true
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/beautiful_captions"]
+
