@@ -105,7 +105,11 @@ def run_beautiful_captions(test_video, output_path, animation_enabled):
     Runs beautiful_captions package with animation toggled on/off
     """
     caption_config = CaptionConfig(
-        style=StyleConfig(font_size=100),
+        style=StyleConfig(
+            font_size=100,
+            verticle_position=0.5, 
+            horizontal_position=0.5 
+        ),
         animation=AnimationConfig(enabled=animation_enabled, type="bounce", keyframes=10),
     )
 

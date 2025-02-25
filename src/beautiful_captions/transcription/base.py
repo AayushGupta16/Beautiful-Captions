@@ -27,7 +27,7 @@ class TranscriptionService(ABC):
         pass
 
     @abstractmethod
-    def to_srt(self, utterances: List[Utterance], speaker_colors: List[str]) -> str:
+    def to_srt(self, utterances: List[Utterance], speaker_colors: List[str], max_words_per_line: int = 1) -> str:
         """
         Convert utterances to SRT format with colored speaker labels
         """

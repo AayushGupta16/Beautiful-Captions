@@ -80,7 +80,10 @@ class StyleManager:
         primary_color: str = "&HFFFFFF&",
         outline_color: str = "&H000000&",
         outline_thickness: float = 2.0,
-        vertical_position: float = 0.7,
+        vertical_position: float = 0.5,
+        horizontal_position: float = 0.5,
+        video_width: int = 1920,
+        video_height: int = 1080,
         bold: bool = False,
         italic: bool = False
     ) -> str:
@@ -97,8 +100,15 @@ class StyleManager:
         font_size = max(1, min(font_size, 300))  # Reasonable limits
         outline_thickness = max(0, min(outline_thickness, 10.0))
         vertical_position = max(0, min(vertical_position, 1.0))
+        horizontal_position = max(0, min(horizontal_position, 1.0))
         
-        margin_v = int(1920 * vertical_position)
+        # Calculate margins based on positions and actual video dimensions
+        margin_v = int(video_height * vertical_position)
+        margin_l = int(video_width * horizontal_position)
+        margin_r = int(video_width * (1 - horizontal_position))
+        
+        # Use center alignment (2) and let margins control the position
+        alignment = 2  # Center alignment
         
         style = (
             f"Style: Default,{font_name},{font_size},"
@@ -109,7 +119,7 @@ class StyleManager:
             f"{1 if bold else 0},{1 if italic else 0},0,0,"  # Bold, italic, etc.
             f"100,100,0,0,1,"  # Scale and spacing
             f"{outline_thickness},0,"  # Outline and shadow
-            f"2,10,10,{margin_v},1"  # Alignment and margins
+            f"{alignment},{margin_l},{margin_r},{margin_v},1"  # Alignment and margins
         )
         
         return style

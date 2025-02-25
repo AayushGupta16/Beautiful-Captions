@@ -13,7 +13,7 @@ import time
 from pathlib import Path
 from dotenv import load_dotenv
 from beautiful_captions import process_video, add_captions, Video
-from beautiful_captions import StyleConfig, AnimationConfig, CaptionConfig
+from beautiful_captions import StyleConfig, AnimationConfig, CaptionConfig, DiarizationConfig
 from moviepy.editor import VideoFileClip, TextClip, CompositeVideoClip
 from moviepy.video.tools.subtitles import SubtitlesClip 
 
@@ -26,7 +26,8 @@ async def demo_transcription():
         color="white",
         outline_color="black",
         outline_thickness=2,
-        position=0.5,
+        verticle_position=0.5,  
+        horizontal_position=0.5,  
         font_size=200
     )
     
@@ -36,16 +37,22 @@ async def demo_transcription():
         keyframes=10
     )
     
-    config = CaptionConfig(style=style, animation=animation)
+    diarization = DiarizationConfig(
+        enabled=True,
+        colors=["white", "yellow", "blue"],
+        keep_speaker_labels=False  
+    )
+    
+    config = CaptionConfig(style=style, animation=animation, diarization=diarization)
 
-    # # Method 1: Process video with automatic transcription
-    # output_path = await process_video(
-    #     video_path="input.mp4",
-    #     transcribe_with="assemblyai",
-    #     api_key=os.getenv("ASSEMBLYAI_API_KEY"),
-    #     config=config
-    # )
-    # print(f"Processed video saved to: {output_path}")
+    # Method 1: Process video with automatic transcription
+    output_path = await process_video(
+        video_path="input.mp4",
+        transcribe_with="assemblyai",
+        api_key=os.getenv("ASSEMBLYAI_API_KEY"),
+        config=config
+    )
+    print(f"Processed video saved to: {output_path}")
 
     # Method 2: Using existing SRT file with Beautiful Captions
     start_time = time.time()
@@ -73,7 +80,6 @@ async def demo_transcription():
     print(f"Beautiful Captions: {bc_time:.2f}s")
     print(f"MoviePy: {moviepy_time:.2f}s")
     print(f"Beautiful Captions is {moviepy_time/bc_time:.1f}x faster than MoviePy")
-
 
     # # Method 3: Using existing SRT content
     # output_path = add_captions(

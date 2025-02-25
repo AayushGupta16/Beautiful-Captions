@@ -4,11 +4,14 @@ from typing import List, Optional
 @dataclass
 class StyleConfig:
     font: str = "Montserrat"
-    position: float = 0.7
+    verticle_position: float = 0.5
+    horizontal_position: float = 0.5
     color: str = "white"
     outline_color: str = "black"
     outline_thickness: int = 2
     font_size: int = 140
+    max_words_per_line: int = 1  
+    auto_scale_font: bool = True  
 
 @dataclass
 class AnimationConfig:
@@ -21,6 +24,7 @@ class DiarizationConfig:
     enabled: bool = True
     colors: List[str] = None
     max_speakers: int = 3
+    keep_speaker_labels: bool = False
 
     def __post_init__(self):
         if self.colors is None:
@@ -39,12 +43,3 @@ class CaptionConfig:
             self.animation = AnimationConfig()
         if self.diarization is None:
             self.diarization = DiarizationConfig()
-
-style = StyleConfig(
-    font="Montserrat",
-    color="white",
-    outline_color="black",
-    outline_thickness=2,
-    position=0.5,
-    font_size=100  # Smaller text
-)

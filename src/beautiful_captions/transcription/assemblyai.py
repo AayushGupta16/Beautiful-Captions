@@ -75,31 +75,64 @@ class AssemblyAIService(TranscriptionService):
             logger.error(f"AssemblyAI transcription failed: {str(e)}")
             raise
             
-    def to_srt(self, utterances: List[Utterance], speaker_colors: List[str]) -> str:
+    def to_srt(self, utterances: List[Utterance], speaker_colors: List[str], max_words_per_line: int = 1) -> str:
         """Convert utterances to plain SRT format.
         
         Args:
             utterances: List of transcribed utterances
-            speaker_colors: List of colors (unused in plain SRT)
+            speaker_colors: List of colors (used for speaker identification)
+            max_words_per_line: Maximum number of words per line
             
         Returns:
-            SRT formatted string
+            SRT formatted string with speaker labels
         """
+        from ..utils.subtitles import group_words_into_lines
+        
         srt_content = ""
         subtitle_index = 1
         
         for utterance in utterances:
-            for word in utterance.words:
-                start_time = timedelta(milliseconds=word.start)
-                end_time = timedelta(milliseconds=word.end)
+            # Group words by max_words_per_line
+            if max_words_per_line > 1:
+                # Group words by their text
+                word_texts = [word.text for word in utterance.words]
+                grouped_lines = group_words_into_lines(word_texts, max_words_per_line)
                 
-                # Format times for SRT
-                start_str = f"{start_time.seconds // 3600:02d}:{(start_time.seconds % 3600) // 60:02d}:{start_time.seconds % 60:02d},{start_time.microseconds // 1000:03d}"
-                end_str = f"{end_time.seconds // 3600:02d}:{(end_time.seconds % 3600) // 60:02d}:{end_time.seconds % 60:02d},{end_time.microseconds // 1000:03d}"
+                # Create groups of words based on the lines
+                word_index = 0
+                for line in grouped_lines:
+                    line_word_count = len(line.split())
+                    if word_index + line_word_count <= len(utterance.words):
+                        group_start = utterance.words[word_index].start
+                        group_end = utterance.words[word_index + line_word_count - 1].end
+                        
+                        # Format times for SRT
+                        start_time = timedelta(milliseconds=group_start)
+                        end_time = timedelta(milliseconds=group_end)
+                        
+                        start_str = f"{start_time.seconds // 3600:02d}:{(start_time.seconds % 3600) // 60:02d}:{start_time.seconds % 60:02d},{start_time.microseconds // 1000:03d}"
+                        end_str = f"{end_time.seconds // 3600:02d}:{(end_time.seconds % 3600) // 60:02d}:{end_time.seconds % 60:02d},{end_time.microseconds // 1000:03d}"
+                        
+                        srt_content += f"{subtitle_index}\n"
+                        srt_content += f"{start_str} --> {end_str}\n"
+                        srt_content += f"{utterance.speaker}: {line}\n\n"
+                        
+                        subtitle_index += 1
+                        word_index += line_word_count
+            else:
+                # Original single-word behavior
+                for word in utterance.words:
+                    start_time = timedelta(milliseconds=word.start)
+                    end_time = timedelta(milliseconds=word.end)
+                    
+                    # Format times for SRT
+                    start_str = f"{start_time.seconds // 3600:02d}:{(start_time.seconds % 3600) // 60:02d}:{start_time.seconds % 60:02d},{start_time.microseconds // 1000:03d}"
+                    end_str = f"{end_time.seconds // 3600:02d}:{(end_time.seconds % 3600) // 60:02d}:{end_time.seconds % 60:02d},{end_time.microseconds // 1000:03d}"
+                    
+                    srt_content += f"{subtitle_index}\n"
+                    srt_content += f"{start_str} --> {end_str}\n"
+                    srt_content += f"{utterance.speaker}: {word.text}\n\n"
+                    
+                    subtitle_index += 1
                 
-                srt_content += f"{subtitle_index}\n"
-                srt_content += f"{start_str} --> {end_str}\n"
-                srt_content += f"{utterance.speaker}: {word.text}\n\n"
-                
-                subtitle_index += 1
         return srt_content

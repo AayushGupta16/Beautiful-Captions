@@ -62,7 +62,11 @@ class Video:
             extract_audio(self.video_path, self._audio_path)
         
         self._utterances = await service.transcribe(str(self._audio_path), max_speakers)
-        self._srt_content = service.to_srt(self._utterances, self.config.diarization.colors)
+        self._srt_content = service.to_srt(
+            self._utterances, 
+            self.config.diarization.colors,
+            max_words_per_line=self.config.style.max_words_per_line
+        )
         
     def add_captions(
         self,
@@ -91,7 +95,13 @@ class Video:
         
         # Apply styling if enabled
         if self.config.diarization.enabled:
-            srt_content = style_srt_content(srt_content, self.config.diarization.colors)
+            srt_content = style_srt_content(
+                srt_content, 
+                self.config.diarization.colors,
+                encode_speaker_colors=True,
+                keep_speaker_labels=self.config.diarization.keep_speaker_labels,
+                max_words_per_line=self.config.style.max_words_per_line
+            )
             
         if not output_path:
             output_path = self.video_path.with_stem(f"{self.video_path.stem}_captioned")
