@@ -7,7 +7,7 @@ import statistics
 from pathlib import Path
 from typing import Dict, List
 from moviepy.editor import VideoFileClip, TextClip, CompositeVideoClip, VideoClip
-from beautiful_captions import add_captions, CaptionConfig, StyleConfig, AnimationConfig
+from beautiful_captions import subtitles_from_srt, CaptionConfig, StyleConfig, AnimationConfig
 
 class ResourceMonitor:
     def __init__(self, interval: float = 0.1):
@@ -108,12 +108,11 @@ def run_beautiful_captions(test_video, output_path, animation_enabled):
         style=StyleConfig(
             font_size=100,
             verticle_position=0.5, 
-            horizontal_position=0.5 
         ),
         animation=AnimationConfig(enabled=animation_enabled, type="bounce", keyframes=10),
     )
 
-    add_captions(
+    subtitles_from_srt(
         video_path=test_video,
         srt_path="subtitles.srt",
         output_path=output_path,

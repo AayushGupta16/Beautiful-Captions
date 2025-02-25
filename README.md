@@ -27,14 +27,14 @@ Beautiful Captions provides two API styles to suit your needs:
 from beautiful_captions import add_captions, transcribe, process_video
 
 # Using an existing SRT file
-add_captions("input.mp4", "subtitles.srt", style="default")
+subtitles_from_srt("input.mp4", "subtitles.srt", style="default")
 
 # Transcribe and caption
 transcribe("video.mp4", service="assemblyai", api_key="YOUR_KEY")
-add_captions("video.mp4", "generated.srt", style="default")
+subtitles_from_srt("video.mp4", "generated.srt", style="default")
 
 # All-in-one process
-process_video("input.mp4", 
+add_subtitles("input.mp4", 
     transcribe_with="assemblyai",
     api_key="YOUR_KEY",
     style="default"
@@ -48,13 +48,13 @@ from beautiful_captions import Video
 
 # Using an existing SRT file
 video = Video("input.mp4")
-video.add_captions("subtitles.srt", style="default")
+video.subtitles_from_srt("subtitles.srt", style="default")
 video.save("output.mp4")
 
 # Transcribe and caption
 video = Video("input.mp4")
 video.transcribe(service="assemblyai", api_key="YOUR_KEY")
-video.add_captions(style="default", animation="bounce")
+video.subtitles_from_srt(style="default", animation="bounce")
 video.save("output.mp4")
 ```
 

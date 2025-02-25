@@ -74,6 +74,7 @@ class Video:
         srt_path: Optional[Union[str, Path]] = None,
         srt_content: Optional[str] = None,
         output_path: Optional[Union[str, Path]] = None,
+        add_styling: Optional[bool] = True,
         cuda: Optional[bool] = False,
     ) -> Path:
         """Add captions to video.
@@ -96,7 +97,7 @@ class Video:
         srt_content = srt_content or self._srt_content
         
         # Apply styling if enabled
-        if self.config.diarization.enabled:
+        if add_styling and self.config.diarization.enabled:
             srt_content = style_srt_content(
                 srt_content, 
                 self.config.diarization.colors,

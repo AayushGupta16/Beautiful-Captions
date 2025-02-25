@@ -46,7 +46,7 @@ def create_transcription_service(
         
     return service_class(api_key)
 
-async def process_video(
+async def add_subtitles(
     video_path: Union[str, Path],
     transcribe_with: ServiceType,
     api_key: str,
@@ -121,12 +121,14 @@ async def process_video(
 
 
 
-async def add_captions(
+async def subtitles_from_srt(
     video_path: Union[str, Path],
     srt_path: Union[str, Path],
     output_path: Optional[Union[str, Path]] = None,
     config: Optional[CaptionConfig] = None,
     style: Optional[Union[str, Dict[str, Any], StyleConfig]] = None,
+    cuda: Optional[bool] = False
+
 ) -> Union[Path, tuple[Path, Path]]:
     """Add captions to a video using an existing SRT file.
     
@@ -159,10 +161,13 @@ async def add_captions(
     
         video_output = video.add_captions(
             srt_content=srt_content,
-            output_path=output_path
+            output_path=output_path,
+            add_styling=False,
+            cuda=cuda
         )
     
     return video_output
+
 
 
 async def extract_subtitles(

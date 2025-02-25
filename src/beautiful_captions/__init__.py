@@ -1,7 +1,7 @@
 """Beautiful Captions - Fast and elegant video captioning library."""
 
 from .core.config import CaptionConfig, StyleConfig, AnimationConfig, DiarizationConfig
-from .core.caption import add_captions, process_video, extract_subtitles, caption_stream
+from .core.caption import subtitles_from_srt, add_subtitles, extract_subtitles, caption_stream
 from .core.video import Video
 from .styling.style import StyleManager, FontManager
 from .styling.animation import AnimationFactory, create_animation_for_subtitle
@@ -11,8 +11,8 @@ __version__ = "0.1.27"
 
 __all__ = [
     # Main functions
-    "add_captions",
-    "process_video",
+    "subtitles_from_srt",
+    "add_subtitles",
     "extract_subtitles",
     "caption_stream",
     

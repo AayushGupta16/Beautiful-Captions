@@ -12,7 +12,7 @@ import os
 import time
 from pathlib import Path
 from dotenv import load_dotenv
-from beautiful_captions import process_video, add_captions, Video
+from beautiful_captions import add_subtitles, subtitles_from_srt, Video
 from beautiful_captions import StyleConfig, AnimationConfig, CaptionConfig, DiarizationConfig
 from moviepy.editor import VideoFileClip, TextClip, CompositeVideoClip
 from moviepy.video.tools.subtitles import SubtitlesClip 
@@ -48,7 +48,7 @@ async def demo_transcription():
     config = CaptionConfig(style=style, animation=animation, diarization=diarization)
 
     # Method 1: Process video with automatic transcription
-    output_path = await process_video(
+    output_path = await add_subtitles(
         video_path="input.mp4",
         output_path="output.mp4",
         transcribe_with="assemblyai",
@@ -61,7 +61,7 @@ async def demo_transcription():
 
     # Method 2: Using existing SRT file with Beautiful Captions
     start_time = time.time()
-    output_path = add_captions(
+    output_path = subtitles_from_srt(
         video_path="input.mp4",
         srt_path="subtitles.srt",
         config=config
