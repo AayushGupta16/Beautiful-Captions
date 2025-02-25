@@ -44,7 +44,7 @@ class AssemblyAIService(TranscriptionService):
         )
         
         try:
-            # Set a longer timeout for the transcription process
+            # Set up the transcriber with config
             transcriber = aai.Transcriber(config=config)
             
             # First upload the file and get a transcript object - with retry logic
@@ -55,8 +55,7 @@ class AssemblyAIService(TranscriptionService):
             for attempt in range(max_retries):
                 try:
                     logger.info(f"Submitting transcription job (attempt {attempt+1}/{max_retries})...")
-                    # Configure the AssemblyAI client with a longer timeout
-                    aai.settings.timeout = 120  # 2 minutes timeout for HTTP requests
+                    # Use the transcriber directly without setting timeout on settings
                     transcript = transcriber.submit(audio_path)
                     break
                 except Exception as e:
