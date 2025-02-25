@@ -8,6 +8,8 @@ from .config import CaptionConfig, StyleConfig
 from .video import Video
 from ..transcription.assemblyai import AssemblyAIService
 from ..transcription.base import TranscriptionService
+from ..utils.subtitles import style_srt_content
+
 
 logger = logging.getLogger(__name__)
 
@@ -88,16 +90,23 @@ async def process_video(
     with Video(video_path, config) as video:
         await video.transcribe(service)
         
-        # If an SRT output path is provided, write the SRT content there.
+        # If an SRT output path is provided, process the SRT content through style_srt_content.
         if srt_output_path:
             srt_output_path = Path(srt_output_path)
             srt_output_path.parent.mkdir(parents=True, exist_ok=True)
+            # Process the raw SRT content so that speaker labels are replaced with color encodings.
+            styled_srt = style_srt_content(
+                video._srt_content,
+                video.config.diarization.colors,
+                encode_speaker_colors=video.config.diarization.enabled,
+                keep_speaker_labels=video.config.diarization.keep_speaker_labels,  
+                max_words_per_line=video.config.style.max_words_per_line
+            )
             with open(srt_output_path, 'w', encoding='utf-8') as f:
-                f.write(video._srt_content)
+                f.write(styled_srt)
         
         video_output = video.add_captions(output_path=output_path)
     
-    # Return a tuple if SRT file was written, otherwise just the video output.
     if srt_output_path:
         return video_output, srt_output_path
     return video_output
@@ -110,7 +119,6 @@ def add_captions(
     output_path: Optional[Union[str, Path]] = None,
     config: Optional[CaptionConfig] = None,
     style: Optional[Union[str, Dict[str, Any], StyleConfig]] = None,
-    srt_output_path: Optional[Union[str, Path]] = None  # NEW optional parameter
 ) -> Union[Path, tuple[Path, Path]]:
     """Add captions to a video using an existing SRT file.
     
@@ -140,21 +148,12 @@ def add_captions(
     with Video(video_path, config) as video:
         with open(srt_path, 'r', encoding='utf-8') as f:
             srt_content = f.read()
-        
-        # Write SRT content to file if an output path is specified.
-        if srt_output_path:
-            srt_output_path = Path(srt_output_path)
-            srt_output_path.parent.mkdir(parents=True, exist_ok=True)
-            with open(srt_output_path, 'w', encoding='utf-8') as f:
-                f.write(srt_content)
-        
+    
         video_output = video.add_captions(
             srt_content=srt_content,
             output_path=output_path
         )
     
-    if srt_output_path:
-        return video_output, srt_output_path
     return video_output
 
 
