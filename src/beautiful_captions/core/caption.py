@@ -121,7 +121,7 @@ async def process_video(
 
 
 
-def add_captions(
+async def add_captions(
     video_path: Union[str, Path],
     srt_path: Union[str, Path],
     output_path: Optional[Union[str, Path]] = None,
