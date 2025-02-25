@@ -2,7 +2,7 @@
 
 import logging
 from pathlib import Path
-from typing import Union, Tuple
+from typing import Union, Tuple, Optional
 import subprocess
 
 logger = logging.getLogger(__name__)
@@ -38,12 +38,13 @@ def extract_audio(video_path: Union[str, Path], output_path: Union[str, Path]) -
 def combine_video_subtitles(
     video_path: Union[str, Path],
     subtitle_path: Union[str, Path],
-    output_path: Union[str, Path]
+    output_path: Union[str, Path],
+    cuda: Optional[bool] = False
 ) -> None:
     """Combine video with ASS subtitles.
     
     Args:
-        video_path: Input video file path
+        video_path: Input videeo file path
         subtitle_path: ASS subtitle file path
         output_path: Output video file path
     
@@ -51,16 +52,34 @@ def combine_video_subtitles(
         subprocess.CalledProcessError: If FFmpeg command fails
     """
     try:
-        cmd = [
-            "ffmpeg",
-            "-i", str(video_path),
-            "-vf", f"ass={subtitle_path}",
-            "-c:a", "copy",  # Copy audio stream
-            "-preset", "medium",  # Encoding preset
-            "-movflags", "+faststart",  # Enable fast start for web playback
-            "-y",  # Overwrite output file
-            str(output_path)
-        ]
+        if cuda:
+            cmd = [
+                "ffmpeg",
+                "-hwaccel", "cuda",
+                "-hwaccel_output_format", "cuda",
+                "-i", str(video_path),
+                "-vf", f"hwdownload,format=nv12,ass={subtitle_path}:fontsdir=/app/fonts/",
+                "-c:v", "h264_nvenc",
+                "-preset", "medium",
+                "-g", "60",
+                "-keyint_min", "60",
+                "-c:a", "copy",
+                "-y",
+                "-loglevel", "error",  # Only show errors
+                output_path
+            ]
+        else:
+            cmd = [
+                "ffmpeg",
+                "-i", str(video_path),
+                "-vf", f"ass={subtitle_path}",
+                "-c:a", "copy",  # Copy audio stream
+                "-preset", "medium",  # Encoding preset
+                "-movflags", "+faststart",  # Enable fast start for web playback
+                "-y",  # Overwrite output file
+                "-loglevel", "error",  # Only show errors
+                str(output_path)
+            ]
         
         subprocess.run(cmd, check=True, capture_output=True, text=True)
         logger.info("Subtitles combined with video successfully")

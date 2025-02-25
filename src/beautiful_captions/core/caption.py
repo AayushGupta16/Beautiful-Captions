@@ -53,7 +53,8 @@ async def process_video(
     output_path: Optional[Union[str, Path]] = None,
     config: Optional[CaptionConfig] = None,
     style: Optional[Union[str, Dict[str, Any], StyleConfig]] = None,
-    srt_output_path: Optional[Union[str, Path]] = None  
+    srt_output_path: Optional[Union[str, Path]] = None,
+    cuda: Optional[bool] = False
 ) -> Union[Path, tuple[Path, Path]]:
     """Process a video by transcribing and adding captions.
     
@@ -112,7 +113,7 @@ async def process_video(
             with open(srt_output_path, 'w', encoding='utf-8') as f:
                 f.write(styled_srt)
         
-        video_output = video.add_captions(output_path=output_path)
+        video_output = video.add_captions(output_path=output_path, cuda=cuda)
     
     if srt_output_path:
         return video_output, srt_output_path

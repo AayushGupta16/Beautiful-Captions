@@ -73,7 +73,8 @@ class Video:
         self,
         srt_path: Optional[Union[str, Path]] = None,
         srt_content: Optional[str] = None,
-        output_path: Optional[Union[str, Path]] = None
+        output_path: Optional[Union[str, Path]] = None,
+        cuda: Optional[bool] = False,
     ) -> Path:
         """Add captions to video.
         
@@ -121,7 +122,8 @@ class Video:
         combine_video_subtitles(
             self.video_path,
             self._ass_path,
-            output_path
+            output_path,
+            cuda
         )
         
         return output_path
