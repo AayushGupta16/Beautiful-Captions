@@ -173,7 +173,7 @@ def style_srt_content(
         # Extract speaker label if present
         text = sub.text
         speaker_label = ""
-        speaker_match = re.match(r'^(Speaker \d+):\s*(.*)', text)
+        speaker_match = re.match(r'^(Speaker [A-Z]+):\s*(.*)', text)
         
         if speaker_match:
             speaker_label = speaker_match.group(1)
