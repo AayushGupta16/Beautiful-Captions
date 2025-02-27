@@ -71,7 +71,7 @@ class Video:
         
     def add_captions(
         self,
-        srt_path: Optional[Union[str, Path]] = None,
+        srt_input_path: Optional[Union[str, Path]] = None,
         srt_content: Optional[str] = None,
         output_path: Optional[Union[str, Path]] = None,
         add_styling: Optional[bool] = True,
@@ -88,8 +88,8 @@ class Video:
             Path to output video file
         """
         # Get SRT content from file or string or transcription
-        if srt_path:
-            with open(srt_path, 'r', encoding='utf-8') as f:
+        if srt_input_path:
+            with open(srt_input_path, 'r', encoding='utf-8') as f:
                 srt_content = f.read()
         elif not srt_content and not self._srt_content:
             raise ValueError("No caption content available. Provide either srt_path, srt_content, or run transcribe() first.")

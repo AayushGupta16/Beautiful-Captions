@@ -123,7 +123,7 @@ async def add_subtitles(
 
 async def subtitles_from_srt(
     video_path: Union[str, Path],
-    srt_path: Union[str, Path],
+    srt_input_path: Union[str, Path],
     output_path: Optional[Union[str, Path]] = None,
     config: Optional[CaptionConfig] = None,
     style: Optional[Union[str, Dict[str, Any], StyleConfig]] = None,
@@ -156,7 +156,7 @@ async def subtitles_from_srt(
         config = CaptionConfig(style=style_config)
     
     with Video(video_path, config) as video:
-        with open(srt_path, 'r', encoding='utf-8') as f:
+        with open(srt_input_path, 'r', encoding='utf-8') as f:
             srt_content = f.read()
     
         video_output = video.add_captions(
