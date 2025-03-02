@@ -123,7 +123,7 @@ async def add_subtitles(
 
 async def subtitles_from_srt(
     video_path: Union[str, Path],
-    srt_input_path: Union[str, Path],
+    srt_input_path: Optional[Union[str, Path]] = None,
     srt_content: Optional[str] = None,
     output_path: Optional[Union[str, Path]] = None,
     config: Optional[CaptionConfig] = None,
