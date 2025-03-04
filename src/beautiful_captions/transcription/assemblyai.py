@@ -1,6 +1,6 @@
 import logging
 import os
-from typing import List
+from typing import List, Optional, Dict
 import assemblyai as aai
 from datetime import timedelta
 import asyncio
@@ -20,9 +20,18 @@ class AssemblyAIService(TranscriptionService):
     async def transcribe(
         self,
         audio_path: str,
-        max_speakers: int = 3
+        max_speakers: int = 3,
+        censor_subtitles: bool = False,
+        custom_censored_words: Optional[Dict[str, str]] = None
     ) -> List[Utterance]:
-        """Transcribe audio using AssemblyAI."""
+        """Transcribe audio using AssemblyAI with optional censorship.
+        
+        Args:
+            audio_path: Path to audio file
+            max_speakers: Maximum number of speakers to identify
+            censor_subtitles: Whether to censor profanity in subtitles
+            custom_censored_words: Dictionary of words to censor {word: censored_version}
+        """
         logger.info(f"Transcribing audio with AssemblyAI: {audio_path}")
         
         # Check if file exists and log details for debugging
@@ -33,12 +42,20 @@ class AssemblyAIService(TranscriptionService):
         
         config = aai.TranscriptionConfig(
             speaker_labels=True,
-            speakers_expected=max_speakers
+            speakers_expected=max_speakers,
+            language_detection=True,
+            filter_profanity=censor_subtitles
         )
         
         try:
             # Handle the synchronous SDK in an async context
-            return await asyncio.to_thread(self._transcribe_sync, audio_path, config)
+            utterances = await asyncio.to_thread(self._transcribe_sync, audio_path, config)
+            
+            # Apply custom word censoring if provided
+            if custom_censored_words and isinstance(custom_censored_words, dict):
+                utterances = self._apply_custom_censoring(utterances, custom_censored_words)
+                
+            return utterances
             
         except Exception as e:
             logger.error(f"AssemblyAI transcription failed: {str(e)}")
@@ -79,6 +96,38 @@ class AssemblyAIService(TranscriptionService):
             utterances.append(utterance)
         
         return utterances
+        
+    def _apply_custom_censoring(self, utterances: List[Utterance], custom_censored_words: Dict[str, str]) -> List[Utterance]:
+        """Apply custom word censoring to utterances.
+        
+        Args:
+            utterances: List of utterances to process
+            custom_censored_words: Dictionary mapping words to their censored versions
+            
+        Returns:
+            Processed utterances with censored words
+        """
+        censored_utterances = []
+        
+        for utterance in utterances:
+            censored_words = []
+            for word in utterance.words:
+                # Check if word text (case-insensitive) is in censored words list
+                if word.text.lower() in custom_censored_words:
+                    # Replace with censored version
+                    word.text = custom_censored_words[word.text.lower()]
+                censored_words.append(word)
+            
+            # Create new utterance with censored words
+            censored_utterance = Utterance(
+                speaker=utterance.speaker,
+                words=censored_words,
+                start=utterance.start,
+                end=utterance.end
+            )
+            censored_utterances.append(censored_utterance)
+            
+        return censored_utterances
             
     def to_srt(self, utterances: List[Utterance], speaker_colors: List[str], max_words_per_line: int = 1, include_speaker_labels: bool = True) -> str:
         """Convert utterances to plain SRT format.

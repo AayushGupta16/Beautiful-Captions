@@ -61,7 +61,18 @@ class Video:
             self._audio_path = self.video_path.with_suffix('.aac')
             extract_audio(self.video_path, self._audio_path)
         
-        self._utterances = await service.transcribe(str(self._audio_path), max_speakers)
+        # Get censorship settings from style config
+        censor_subtitles = getattr(self.config.style, 'censor_subtitles', False)
+        custom_censored_words = getattr(self.config.style, 'custom_censored_words', None)
+        
+        # Transcribe with optional censorship
+        self._utterances = await service.transcribe(
+            str(self._audio_path), 
+            max_speakers,
+            censor_subtitles=censor_subtitles,
+            custom_censored_words=custom_censored_words
+        )
+        
         self._srt_content = service.to_srt(
             self._utterances, 
             self.config.diarization.colors,

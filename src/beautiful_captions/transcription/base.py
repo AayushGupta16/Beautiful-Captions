@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import List, Optional
+from typing import List, Optional, Dict
 from dataclasses import dataclass
 
 @dataclass
@@ -20,9 +20,21 @@ class TranscriptionService(ABC):
         self.api_key = api_key
 
     @abstractmethod
-    async def transcribe(self, audio_path: str, max_speakers: int = 3) -> List[Utterance]:
+    async def transcribe(
+        self, 
+        audio_path: str, 
+        max_speakers: int = 3,
+        censor_subtitles: bool = False,
+        custom_censored_words: Optional[Dict[str, str]] = None
+    ) -> List[Utterance]:
         """
         Transcribe audio file and return list of utterances with speaker diarization
+        
+        Args:
+            audio_path: Path to the audio file
+            max_speakers: Maximum number of speakers to identify
+            censor_subtitles: Whether to censor profanity in subtitles
+            custom_censored_words: Dictionary of words to censor {word: censored_version}
         """
         pass
 

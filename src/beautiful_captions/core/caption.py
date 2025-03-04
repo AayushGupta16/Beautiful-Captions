@@ -54,7 +54,7 @@ async def add_subtitles(
     config: Optional[CaptionConfig] = None,
     style: Optional[Union[str, Dict[str, Any], StyleConfig]] = None,
     srt_output_path: Optional[Union[str, Path]] = None,
-    cuda: Optional[bool] = False
+    cuda: Optional[bool] = False 
 ) -> Union[Path, tuple[Path, Path]]:
     """Process a video by transcribing and adding captions.
     
@@ -64,25 +64,44 @@ async def add_subtitles(
         api_key: API key for transcription service
         output_path: Path for output video (optional)
         config: Caption configuration (optional)
-        style: Style configuration (optional)
+        style: Style configuration (optional). Can include censorship options via
+               style.censor_subtitles and style.custom_censored_words.
         srt_output_path: (Optional) Path to write out the generated SRT content.
                          If provided, the SRT file will be created (including parent directories)
                          and its path will be returned along with the video output.
+        cuda: Use CUDA acceleration for video processing (optional)
     
     Returns:
         Either the Path to the output video, or a tuple (video_output_path, srt_file_path)
         if srt_output_path was provided.
+        
+    Examples:
+        ```python
+        # Example with censorship enabled
+        style = {
+            "max_words_per_line": 3,
+            "censor_subtitles": True,
+            "custom_censored_words": {"example": "e**mple"}
+        }
+        
+        await add_subtitles("input.mp4", "assemblyai", API_KEY, style=style)
+        ```
     """
     # If config is not provided but style is, create a config with the style
-    if config is None and style is not None:
-        if isinstance(style, str):
-            style_config = StyleConfig()
-        elif isinstance(style, dict):
-            style_config = StyleConfig(**style)
-        elif isinstance(style, StyleConfig):
-            style_config = style
+    if config is None:
+        # Create style config
+        if style is not None:
+            if isinstance(style, str):
+                style_config = StyleConfig()
+            elif isinstance(style, dict):
+                style_config = StyleConfig(**style)
+            elif isinstance(style, StyleConfig):
+                style_config = style
+            else:
+                raise TypeError("Style must be a string, dictionary, or StyleConfig object")
         else:
-            raise TypeError("Style must be a string, dictionary, or StyleConfig object")
+            # Create default style config
+            style_config = StyleConfig()
         
         # Create config with diarization explicitly enabled for coloring
         config = CaptionConfig(
@@ -135,15 +154,18 @@ async def subtitles_from_srt(
     
     Args:
         video_path: Path to input video
-        srt_path: Path to SRT file to read from
+        srt_input_path: Path to SRT file to read from
+        srt_content: Direct SRT content as string (alternative to srt_input_path)
         output_path: Path for output video (optional)
         config: Caption configuration (optional)
-        style: Style configuration (optional)
-        srt_output_path: (Optional) Path to write out the SRT content.
+        style: Style configuration (optional). Can include settings like 
+               max_words_per_line and font options. Note that censorship
+               options (censor_subtitles, custom_censored_words) have no effect
+               when using existing SRT content, as the text isn't re-transcribed.
+        cuda: Use CUDA acceleration for video processing (optional)
     
     Returns:
-        Either the Path to the output video, or a tuple (video_output_path, srt_file_path)
-        if srt_output_path was provided.
+        Path to the output video with captions
     """
     if config is None and style is not None:
         if isinstance(style, str):
@@ -189,7 +211,8 @@ async def extract_subtitles(
         output_path: Path for output SRT file (optional)
         config: Caption configuration (optional)
         style: Style configuration - can be a preset name, StyleConfig object, 
-               or dict of style parameters (optional)
+               or dict of style parameters. Can include censorship options via
+               style.censor_subtitles and style.custom_censored_words.
         
     Returns:
         Path to output SRT file
@@ -197,20 +220,25 @@ async def extract_subtitles(
     Note:
         If both config and style are provided, style will be ignored.
     """
-    # If config is not provided but style is, create a config with the style
-    if config is None and style is not None:
-        if isinstance(style, str):
-            # Handle preset style names
-            style_config = StyleConfig()
-            # You could implement preset styles here
-        elif isinstance(style, dict):
-            # Convert dict to StyleConfig
-            style_config = StyleConfig(**style)
-        elif isinstance(style, StyleConfig):
-            # Use the provided StyleConfig directly
-            style_config = style
+    # If config is not provided, create one
+    if config is None:
+        # Create style config
+        if style is not None:
+            if isinstance(style, str):
+                # Handle preset style names
+                style_config = StyleConfig()
+                # You could implement preset styles here
+            elif isinstance(style, dict):
+                # Convert dict to StyleConfig
+                style_config = StyleConfig(**style)
+            elif isinstance(style, StyleConfig):
+                # Use the provided StyleConfig directly
+                style_config = style
+            else:
+                raise TypeError("Style must be a string, dictionary, or StyleConfig object")
         else:
-            raise TypeError("Style must be a string, dictionary, or StyleConfig object")
+            # Create default style config
+            style_config = StyleConfig()
             
         # Create a new config with the specified style and default settings for other options
         config = CaptionConfig(style=style_config)

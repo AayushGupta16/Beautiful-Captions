@@ -163,6 +163,11 @@ def style_srt_content(
     
     # Parse the SRT content
     subs = pysrt.from_string(srt_content)
+    
+    if max_words_per_line > 1:
+        # Process subtitles by speaker to potentially combine them
+        subs = _optimize_subtitles_for_max_words(subs, max_words_per_line)
+    
     styled_content = ""
     
     # Track speakers and their assigned colors
@@ -221,6 +226,94 @@ def style_srt_content(
         styled_content += str(new_sub) + "\n"
     
     return styled_content
+
+
+def _optimize_subtitles_for_max_words(subs, max_words_per_line: int):
+    """Optimize subtitle segmentation based on max_words_per_line.
+    
+    This function looks at adjacent subtitles from the same speaker and combines them
+    if needed to approach the max_words_per_line limit.
+    
+    Args:
+        subs: List of subtitles from pysrt
+        max_words_per_line: Maximum words per line target
+        
+    Returns:
+        Optimized list of subtitles
+    """
+    if not subs or len(subs) <= 1:
+        return subs
+    
+    result = []
+    current_batch = []
+    current_speaker = None
+    current_word_count = 0
+    
+    # Helper to create a new subtitle from a batch
+    def create_subtitle_from_batch(batch):
+        if not batch:
+            return None
+        
+        combined_text = ' '.join([re.sub(r'^(Speaker [A-Z]+):\s*', '', sub.text) for sub in batch])
+        # Keep the speaker label from the first subtitle
+        first_sub_match = re.match(r'^(Speaker [A-Z]+):\s*', batch[0].text)
+        if first_sub_match:
+            speaker_prefix = first_sub_match.group(1) + ": "
+            combined_text = speaker_prefix + combined_text
+        
+        # Create new subtitle with the combined text and spanning time
+        return pysrt.SubRipItem(
+            index=batch[0].index,
+            start=batch[0].start,
+            end=batch[-1].end,
+            text=combined_text
+        )
+    
+    for i, sub in enumerate(subs):
+        # Extract speaker and text
+        speaker_match = re.match(r'^(Speaker [A-Z]+):\s*', sub.text)
+        current_sub_speaker = speaker_match.group(1) if speaker_match else None
+        text_without_speaker = re.sub(r'^(Speaker [A-Z]+):\s*', '', sub.text)
+        word_count = len(text_without_speaker.split())
+        
+        # If we're starting a new batch or changing speakers
+        if (current_speaker is None or 
+            current_speaker != current_sub_speaker or 
+            current_word_count + word_count > max_words_per_line or
+            # Time gap check (e.g., >500ms between subtitles)
+            (current_batch and 
+             (sub.start.ordinal - current_batch[-1].end.ordinal) > 500)):
+            
+            # Process the current batch if it exists
+            if current_batch:
+                result.append(create_subtitle_from_batch(current_batch))
+            
+            # Start a new batch
+            current_batch = [sub]
+            current_speaker = current_sub_speaker
+            current_word_count = word_count
+        else:
+            # Continue the current batch
+            current_batch.append(sub)
+            current_word_count += word_count
+        
+        # If we've reached max_words_per_line or this is the last subtitle
+        if current_word_count >= max_words_per_line or i == len(subs) - 1:
+            if current_batch:
+                result.append(create_subtitle_from_batch(current_batch))
+                current_batch = []
+                current_speaker = None
+                current_word_count = 0
+    
+    # Process any remaining batch
+    if current_batch:
+        result.append(create_subtitle_from_batch(current_batch))
+    
+    # Re-index the subtitles
+    for i, sub in enumerate(result, 1):
+        sub.index = i
+    
+    return result
 
 def group_words_into_lines(
     words: List[str],
