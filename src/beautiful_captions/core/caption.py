@@ -104,11 +104,14 @@ async def add_subtitles(
             style_config = StyleConfig()
         
         # Create config with diarization explicitly enabled for coloring
+        # Use the color from style_config as the first color in diarization colors
+        diarization_colors = [style_config.color, "yellow", "blue"]
         config = CaptionConfig(
             style=style_config,
             diarization=DiarizationConfig(
                 enabled=True,  # Enable diarization for color assignment
-                keep_speaker_labels=False  # Don't show speaker labels by default
+                keep_speaker_labels=False,  # Don't show speaker labels by default
+                colors=diarization_colors  # Use the style color as first diarization color
             )
         )
     
@@ -176,7 +179,17 @@ async def subtitles_from_srt(
             style_config = style
         else:
             raise TypeError("Style must be a string, dictionary, or StyleConfig object")
-        config = CaptionConfig(style=style_config)
+        
+        # Use the color from style_config as the first color in diarization colors
+        diarization_colors = [style_config.color, "yellow", "blue"]
+        config = CaptionConfig(
+            style=style_config,
+            diarization=DiarizationConfig(
+                enabled=True,
+                keep_speaker_labels=False,
+                colors=diarization_colors
+            )
+        )
     
     with Video(video_path, config) as video:
         if srt_content is None and srt_input_path is not None:
@@ -241,7 +254,16 @@ async def extract_subtitles(
             style_config = StyleConfig()
             
         # Create a new config with the specified style and default settings for other options
-        config = CaptionConfig(style=style_config)
+        # Use the color from style_config as the first color in diarization colors
+        diarization_colors = [style_config.color, "yellow", "blue"]
+        config = CaptionConfig(
+            style=style_config,
+            diarization=DiarizationConfig(
+                enabled=True,
+                keep_speaker_labels=False,
+                colors=diarization_colors
+            )
+        )
     
     service = create_transcription_service(transcribe_with, api_key)
     
@@ -295,7 +317,16 @@ def caption_stream(
             raise TypeError("Style must be a string, dictionary, or StyleConfig object")
             
         # Create a new config with the specified style and default settings for other options
-        config = CaptionConfig(style=style_config)
+        # Use the color from style_config as the first color in diarization colors
+        diarization_colors = [style_config.color, "yellow", "blue"]
+        config = CaptionConfig(
+            style=style_config,
+            diarization=DiarizationConfig(
+                enabled=True,
+                keep_speaker_labels=False,
+                colors=diarization_colors
+            )
+        )
     
     with Video(video_path, config) as video:
         return video.add_captions(
