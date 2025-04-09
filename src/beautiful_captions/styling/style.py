@@ -28,7 +28,7 @@ class FontManager:
             
         return fonts
     
-    def get_font_mapping(self) -> Dict[str, str]:
+    def get_font_mapping(self, font) -> Dict[str, str]:
         """Load available fonts and their display names.
         
         Returns:
@@ -43,7 +43,7 @@ class FontManager:
             "Proxima-Nova-Semibold": "Proxima Nova Lt Semibold",
             "Rubik-ExtraBold": "Rubik ExtraBold"
         }
-        return font_lookup
+        return font_lookup.get(font)
         
     def get_font_path(self, font_name: str) -> Optional[str]:
         """Get path to font file.
