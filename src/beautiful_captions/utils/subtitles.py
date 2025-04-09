@@ -100,7 +100,7 @@ def create_ass_subtitles(
                         char_count = len(text.replace('\\N', ''))
                         if char_count > 5:  # Only scale if more than 5 characters
                             # Scale down to 70% for long text (20+ chars)
-                            final_scale = max(70, 100 - (char_count - 5) * 1.5)
+                            final_scale = max(70, 100 - (char_count - 3) * 2)
                         else:
                             final_scale = 100
                     else:
@@ -116,7 +116,7 @@ def create_ass_subtitles(
                         
                         # Create smooth transition from normal to smaller size
                         # Use a quick transition at the beginning for better effect
-                        transition_time = min(duration * 0.25, 0.4)  # Max 0.4 seconds, or 25% of duration
+                        transition_time = min(duration * 0.15, 0.25)  # Max 0.4 seconds, or 25% of duration
                         
                         # Use acceleration for smoother feeling
                         accel = 0.7  # <1 makes it start slow and speed up (ease in)
