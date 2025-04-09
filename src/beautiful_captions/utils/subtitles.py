@@ -94,40 +94,41 @@ def create_ass_subtitles(
                     if color.lower() != style.color.lower():
                         text = f"{{\\c{color_to_ass(color)}}}{text}"
                     
-                    # Calculate base font scale (for longer text)
-                    final_scale = 100  # Default scale (100%)
+                    # Calculate final scale (for longer text)
                     if style.auto_scale_font:
                         # Calculate a scaling factor based on text length
                         char_count = len(text.replace('\\N', ''))
                         if char_count > 5:  # Only scale if more than 5 characters
                             # Scale down to 70% for long text (20+ chars)
                             final_scale = max(70, 100 - (char_count - 5) * 1.5)
+                        else:
+                            final_scale = 100
+                    else:
+                        # If auto-scaling is disabled, use a fixed final scale
+                        final_scale = 70  # Default to 70% for the animation effect
                     
-                    # Apply animation if enabled (flying in effect)
-                    if animation.enabled and animation.type == "bounce":  # We'll keep the parameter name as "bounce" for compatibility
+                    # Apply animation if enabled
+                    if animation.enabled and animation.type == "bounce":  # Keep param name for compatibility
                         duration = sub.duration.seconds + sub.duration.milliseconds / 1000
                         
-                        # Flying in effect: start large, end at normal/scaled size
-                        # Start with 150% of final size
-                        start_scale = int(final_scale * 1.5)
+                        # Start with 100% (normal size)
+                        start_scale = 100
                         
-                        # Create smooth transition from large to normal size
-                        # Use about 1/3 of the duration for the transition (or slightly less for very short subtitles)
-                        transition_time = min(duration * 0.33, 0.6)  # Max 0.6 seconds, or 33% of duration
+                        # Create smooth transition from normal to smaller size
+                        # Use a quick transition at the beginning for better effect
+                        transition_time = min(duration * 0.25, 0.4)  # Max 0.4 seconds, or 25% of duration
                         
-                        # Use acceleration for smoother feeling (ASS transition parameters)
-                        # \t(start_time,end_time,accel,style_tags)
-                        # Accel > 1 makes it start fast and slow down (ease out)
-                        accel = 1.8  # Good value for ease-out effect
+                        # Use acceleration for smoother feeling
+                        accel = 0.7  # <1 makes it start slow and speed up (ease in)
                         
                         # Build the animation
-                        animated_text = f"{{\\fscx{start_scale}\\fscy{start_scale}}}"  # Start with larger size
-                        animated_text += f"{{\\t(0,{transition_time:.2f},{accel:.1f},\\fscx{final_scale}\\fscy{final_scale})}}"  # Transition to final size
+                        animated_text = f"{{\\fscx{start_scale}\\fscy{start_scale}}}"  # Start with normal size
+                        animated_text += f"{{\\t(0,{transition_time:.2f},{accel:.1f},\\fscx{final_scale}\\fscy{final_scale})}}"  # Transition to smaller size
                         animated_text += text
                         
                         text = animated_text
-                    elif style.auto_scale_font and final_scale < 100:
-                        # If animation is disabled but we still need to scale the text
+                    elif style.auto_scale_font:
+                        # If animation is disabled but we still need to scale the text for length
                         text = f"{{\\fscx{final_scale}\\fscy{final_scale}}}{text}"
                     
                     f.write(f"Dialogue: 0,{start},{end},Default,,0,0,0,,{text}\n")
@@ -141,7 +142,6 @@ def create_ass_subtitles(
     except Exception as e:
         logger.error(f"Error creating ASS subtitles: {str(e)}")
         raise
-
 
 
 def style_srt_content(
