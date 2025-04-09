@@ -114,7 +114,8 @@ class Video:
                 self.config.diarization.colors,
                 encode_speaker_colors=True,
                 keep_speaker_labels=self.config.diarization.keep_speaker_labels,
-                max_words_per_line=self.config.style.max_words_per_line
+                max_words_per_line=self.config.style.max_words_per_line,
+                font=self.config.style.font
             )
             
         if not output_path:

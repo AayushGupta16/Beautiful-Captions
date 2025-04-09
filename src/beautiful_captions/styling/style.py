@@ -21,6 +21,19 @@ class FontManager:
         Returns:
             Dictionary mapping display names to font files
         """
+        fonts = {}        
+        for font_file in self.font_dir.glob("*.ttf"):
+            base_name = font_file.stem
+            fonts[base_name] = str(font_file)
+            
+        return fonts
+    
+    def get_font_mapping(self) -> Dict[str, str]:
+        """Load available fonts and their display names.
+        
+        Returns:
+            Dictionary mapping display names to font files
+        """
         font_lookup = {
             "CheGuevaraBarry-Brown": "CheGuevara Barry Brown",
             "FiraSansCondensed-ExtraBoldItalic": "Fira Sans Condensed ExtraBold Italic",

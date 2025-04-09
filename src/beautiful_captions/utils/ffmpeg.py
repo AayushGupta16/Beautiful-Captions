@@ -4,6 +4,7 @@ import logging
 from pathlib import Path
 from typing import Union, Tuple, Optional
 import subprocess
+from ..styling.style import FontManager
 
 logger = logging.getLogger(__name__)
 
@@ -51,6 +52,11 @@ def combine_video_subtitles(
     Raises:
         subprocess.CalledProcessError: If FFmpeg command fails
     """
+    font_manager = FontManager()
+    fonts_dir_path = font_manager.font_dir 
+    escaped_fonts_dir = str(fonts_dir_path).replace('\\', '/').replace(':', '\\:')  
+
+
     try:
         if cuda:
             cmd = [
@@ -58,7 +64,7 @@ def combine_video_subtitles(
                 "-hwaccel", "cuda",
                 "-hwaccel_output_format", "cuda",
                 "-i", str(video_path),
-                "-vf", f"hwdownload,format=nv12,ass={subtitle_path}:fontsdir=/app/fonts/",
+                "-vf", f"hwdownload,format=nv12,ass={subtitle_path}:fontsdir={escaped_fonts_dir}",
                 "-c:v", "h264_nvenc",
                 "-preset", "medium",
                 "-g", "60",
@@ -72,7 +78,7 @@ def combine_video_subtitles(
             cmd = [
                 "ffmpeg",
                 "-i", str(video_path),
-                "-vf", f"ass={subtitle_path}",
+                "-vf", f"ass={subtitle_path}:fontsdir={escaped_fonts_dir}",
                 "-c:a", "copy",  # Copy audio stream
                 "-preset", "medium",  # Encoding preset
                 "-movflags", "+faststart",  # Enable fast start for web playback

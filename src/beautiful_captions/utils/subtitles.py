@@ -44,11 +44,7 @@ def create_ass_subtitles(
         # Get video dimensions
         width, height = get_video_dimensions(video_path)
         font_manage = FontManager()
-        font = font_manage.get_font_path(style.font)
-        print(style.font)
-        print(font_manage.font_map)
-        print(font)
-
+        font = font_manage.get_font_mapping(style.font)
         
         with open(output_path, 'w', encoding='utf-8') as f:
             # Write ASS header
