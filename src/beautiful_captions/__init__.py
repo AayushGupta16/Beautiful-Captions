@@ -7,7 +7,7 @@ from .styling.style import StyleManager, FontManager
 from .styling.animation import AnimationFactory, create_animation_for_subtitle
 from .utils.subtitles import style_srt_content
 
-__version__ = "0.1.61"
+__version__ = "0.1.62"
 
 __all__ = [
     # Main functions
