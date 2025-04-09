@@ -118,13 +118,13 @@ def create_ass_subtitles(
                         duration = sub.duration.seconds + sub.duration.milliseconds / 1000
                         animated_text = ""
                         
-                        for j in range(animation.keyframes - 1):
-                            t1 = j * duration / (animation.keyframes - 1)
-                            t2 = (j + 1) * duration / (animation.keyframes - 1)
-                            scale = max(80, 100 - 90 * (t1 / duration))
+                        for j in range(animation.keyframes):
+                            t = j * duration / (animation.keyframes - 1)
+                            scale = max(80, 100 - 90 * (t / duration))
+                            # Apply font scaling on top of animation if needed
                             if style.auto_scale_font and font_scale < 100:
                                 scale = scale * font_scale / 100
-                            animated_text += f"{{\\t({t1:.2f},{t2:.2f},\\fscx{scale:.0f}\\fscy{scale:.0f})}}"
+                            animated_text += f"{{\\t({t:.2f},{t:.2f},\\fscx{scale:.0f}\\fscy{scale:.0f})}}"
                         
                         animated_text += text
                         text = animated_text
@@ -141,6 +141,93 @@ def create_ass_subtitles(
         logger.error(f"Error creating ASS subtitles: {str(e)}")
         raise
 
+    
+
+def style_srt_content(
+    srt_content: str, 
+    colors: Optional[List[str]] = None, 
+    encode_speaker_colors: bool = True,
+    keep_speaker_labels: bool = False,
+    max_words_per_line: int = 1,
+    font: Optional[str] = None
+) -> str:
+    """Apply styling and color encoding to plain SRT content.
+    
+    Args:
+        srt_content: Plain SRT content
+        colors: List of colors to use for styling text (defaults to ["white", "yellow", "blue"])
+        encode_speaker_colors: Whether to encode speaker colors in the output
+        keep_speaker_labels: Whether to keep speaker labels in the output (default: False)
+        max_words_per_line: Maximum number of words per line (default: 1)
+        font: Font to use for the subtitles (optional)
+        
+    Returns:
+        Styled SRT content with font and color tags as requested
+    """    
+    # Default colors if none provided
+    if colors is None:
+        colors = ["white", "yellow", "blue"]
+    
+    # Parse the SRT content
+    subs = pysrt.from_string(srt_content)
+    
+    if max_words_per_line > 1:
+        # Process subtitles by speaker to potentially combine them
+        subs = _optimize_subtitles_for_max_words(subs, max_words_per_line)
+    
+    styled_content = ""
+    
+    # Track speakers and their assigned colors
+    speaker_colors = {}
+    subtitle_to_speaker = {}  # Map subtitle indices to speakers
+    
+    # First pass: Identify all speakers and assign colors
+    for i, sub in enumerate(subs):
+        text = sub.text
+        speaker_match = re.match(r'^(Speaker [A-Z]+):\s*(.*)', text)
+        
+        if speaker_match:
+            speaker_label = speaker_match.group(1)
+            if speaker_label not in speaker_colors:
+                speaker_colors[speaker_label] = colors[len(speaker_colors) % len(colors)]
+            # Store which speaker this subtitle belongs to
+            subtitle_to_speaker[i] = speaker_label
+    
+    # Second pass: Apply colors and format text
+    for i, sub in enumerate(subs):
+        text = sub.text
+        speaker_label = ""
+        speaker_match = re.match(r'^(Speaker [A-Z]+):\s*(.*)', text)
+        
+        if speaker_match:
+            speaker_label = speaker_match.group(1)
+            text = speaker_match.group(2)
+            
+            # Get the color assigned to this speaker
+            color = speaker_colors.get(speaker_label, colors[0])
+        else:
+            # No speaker label, use default color
+            color = colors[0]
+            
+        # Apply color formatting with font tag if font is provided
+        if encode_speaker_colors:
+            if font:
+                text = f'<font face="{font}" color="{color}">{text}</font>'
+            else:
+                text = f'<font color="{color}">{text}</font>'
+                
+        # Add speaker label back if requested
+        if keep_speaker_labels and speaker_label:
+            text = f"{speaker_label}: {text}"
+            
+        # Format subtitle
+        start = f"{sub.start.hours:01d}:{sub.start.minutes:02d}:{sub.start.seconds:02d},{sub.start.milliseconds:03d}"
+        end = f"{sub.end.hours:01d}:{sub.end.minutes:02d}:{sub.end.seconds:02d},{sub.end.milliseconds:03d}"
+        
+        # Add to styled content
+        styled_content += f"{i+1}\n{start} --> {end}\n{text}\n\n"
+    
+    return styled_content
 def style_srt_content(
     srt_content: str, 
     colors: Optional[List[str]] = None, 
