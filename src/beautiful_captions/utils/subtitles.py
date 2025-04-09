@@ -100,7 +100,7 @@ def create_ass_subtitles(
                         char_count = len(text.replace('\\N', ''))
                         if char_count > 3:  # Only scale if more than 5 characters
                             # Scale down to 70% for long text (20+ chars)
-                            final_scale = max(80, 100 - (char_count - 3) * 2)
+                            final_scale = max(70, 100 - ((char_count - 3) * 2.5))
                         else:
                             final_scale = 100
                     else:
@@ -120,10 +120,22 @@ def create_ass_subtitles(
                         else:
                             animated_text = ""
                         
+                        # First, always add the starting scale at 100%
+                        animated_text += f"{{\\fscx100\\fscy100}}"
+                        
+                        # Calculate the target end scale (combining animation effect with text length scaling)
+                        if style.auto_scale_font:
+                            # Use the calculated final_scale as a minimum
+                            target_scale = final_scale
+                        else:
+                            # Without auto_scale_font, use the animation's minimum (80)
+                            target_scale = 80
+                        
                         # Add keyframe animations throughout the duration
                         for j in range(num_keyframes):
                             t = j * duration / (num_keyframes - 1)
-                            scale = max(80, 100 - 90 * (t / duration))
+                            # Blend from 100% to target_scale
+                            scale = max(target_scale, 100 - 90 * (t / duration))
                             animated_text += f"{{\\t({t:.2f},{t:.2f},\\fscx{scale:.0f}\\fscy{scale:.0f})}}"
                         
                         animated_text += text
