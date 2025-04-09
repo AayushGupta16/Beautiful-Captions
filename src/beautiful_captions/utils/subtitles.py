@@ -111,27 +111,26 @@ def create_ass_subtitles(
                     if animation.enabled and animation.type == "bounce":  # Keep param name for compatibility
                         duration = sub.duration.seconds + sub.duration.milliseconds / 1000
                         
-                        # Start with 100% (normal size)
-                        start_scale = 100
+                        # Create keyframes for the animation
+                        num_keyframes = 10
                         
-                        # Create smooth transition from normal to smaller size
-                        # Use a quick transition at the beginning for better effect
-                        transition_time = min(duration * 0.05, 0.04)  # Max 0.4 seconds, or 25% of duration
+                        # Start with color override if different from default
+                        if color.lower() != style.color.lower():
+                            animated_text = f"{{\\c{color_to_ass(color)}}}"
+                        else:
+                            animated_text = ""
                         
-                        # Use acceleration for smoother feeling
-                        accel = 2  # <1 makes it start slow and speed up (ease in)
+                        # Add keyframe animations throughout the duration
+                        for j in range(num_keyframes):
+                            t = j * duration / (num_keyframes - 1)
+                            scale = max(80, 100 - 90 * (t / duration))
+                            animated_text += f"{{\\t({t:.2f},{t:.2f},\\fscx{scale:.0f}\\fscy{scale:.0f})}}"
                         
-                        # Build the animation
-                        animated_text = f"{{\\fscx{start_scale}\\fscy{start_scale}}}"  # Start with normal size
-                        animated_text += f"{{\\t(0,{transition_time:.2f},{accel:.1f},\\fscx{final_scale}\\fscy{final_scale})}}"  # Transition to smaller size
                         animated_text += text
-                        
                         text = animated_text
                     elif style.auto_scale_font:
                         # If animation is disabled but we still need to scale the text for length
                         text = f"{{\\fscx{final_scale}\\fscy{final_scale}}}{text}"
-                    
-                    f.write(f"Dialogue: 0,{start},{end},Default,,0,0,0,,{text}\n")
                 
                 except Exception as e:
                     logger.error(f"Error processing subtitle {i}: {str(e)}")
