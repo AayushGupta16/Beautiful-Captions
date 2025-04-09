@@ -131,7 +131,8 @@ def create_ass_subtitles(
                     elif style.auto_scale_font:
                         # If animation is disabled but we still need to scale the text for length
                         text = f"{{\\fscx{final_scale}\\fscy{final_scale}}}{text}"
-                
+
+                    f.write(f"Dialogue: 0,{start},{end},Default,,0,0,0,,{text}\n")
                 except Exception as e:
                     logger.error(f"Error processing subtitle {i}: {str(e)}")
                     continue
