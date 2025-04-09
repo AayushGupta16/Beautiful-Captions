@@ -118,13 +118,13 @@ def create_ass_subtitles(
                         duration = sub.duration.seconds + sub.duration.milliseconds / 1000
                         animated_text = ""
                         
-                        for j in range(animation.keyframes):
-                            t = j * duration / (animation.keyframes - 1)
-                            scale = max(80, 100 - 90 * (t / duration))
-                            # Apply font scaling on top of animation if needed
+                        for j in range(animation.keyframes - 1):
+                            t1 = j * duration / (animation.keyframes - 1)
+                            t2 = (j + 1) * duration / (animation.keyframes - 1)
+                            scale = max(80, 100 - 90 * (t1 / duration))
                             if style.auto_scale_font and font_scale < 100:
                                 scale = scale * font_scale / 100
-                            animated_text += f"{{\\t({t:.2f},{t:.2f},\\fscx{scale:.0f}\\fscy{scale:.0f})}}"
+                            animated_text += f"{{\\t({t1:.2f},{t2:.2f},\\fscx{scale:.0f}\\fscy{scale:.0f})}}"
                         
                         animated_text += text
                         text = animated_text
