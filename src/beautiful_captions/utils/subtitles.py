@@ -7,6 +7,7 @@ from typing import Union, List, Optional
 import pysrt
 from ..core.config import StyleConfig, AnimationConfig
 from ..utils.ffmpeg import get_video_dimensions
+from ..styling.style import FontManager
 
 logger = logging.getLogger(__name__)
 
@@ -42,6 +43,8 @@ def create_ass_subtitles(
     try:
         # Get video dimensions
         width, height = get_video_dimensions(video_path)
+        font_manage = FontManager()
+        font = font_manage.get_font_path(style.font)
         
         with open(output_path, 'w', encoding='utf-8') as f:
             # Write ASS header
@@ -59,7 +62,7 @@ def create_ass_subtitles(
             
             # Write default style
             f.write(
-                f"Style: Default,{style.font},{style.font_size},"  # Use font_size from StyleConfig
+                f"Style: Default,{font},{style.font_size},"  # Use font_size from StyleConfig
                 f"{color_to_ass(style.color)},"  # Primary color
                 f"&H000000FF,"  # Secondary color
                 f"{color_to_ass(style.outline_color)},"  # Outline color

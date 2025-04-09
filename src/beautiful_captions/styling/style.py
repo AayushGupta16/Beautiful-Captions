@@ -23,13 +23,13 @@ class FontManager:
         """
         fonts = {}
         font_lookup = {
-            "CheGuevaraBarry-Brown": "CheGuevara Barry",
-            "FiraSansCondensed-ExtraBoldItalic": "Fira Sans Condensed",
-            "Gabarito-Black": "Gabarito",
+            "CheGuevaraBarry-Brown": "CheGuevara Barry Brown",
+            "FiraSansCondensed-ExtraBoldItalic": "Fira Sans Condensed ExtraBold Italic",
+            "Gabarito-Black": "Gabarito Black",
             "KOMIKAX_": "Komika Axis",
-            "Montserrat-Bold": "Montserrat",
-            "Proxima-Nova-Semibold": "Proxima Nova",
-            "Rubik-ExtraBold": "Rubik"
+            "Montserrat-Bold": "Montserrat Bold",
+            "Proxima-Nova-Semibold": "Proxima Nova Lt Semibold",
+            "Rubik-ExtraBold": "Rubik ExtraBold"
         }
         
         # Load bundled fonts
