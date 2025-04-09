@@ -21,7 +21,6 @@ class FontManager:
         Returns:
             Dictionary mapping display names to font files
         """
-        fonts = {}
         font_lookup = {
             "CheGuevaraBarry-Brown": "CheGuevara Barry Brown",
             "FiraSansCondensed-ExtraBoldItalic": "Fira Sans Condensed ExtraBold Italic",
@@ -31,14 +30,7 @@ class FontManager:
             "Proxima-Nova-Semibold": "Proxima Nova Lt Semibold",
             "Rubik-ExtraBold": "Rubik ExtraBold"
         }
-        
-        # Load bundled fonts
-        for font_file in self.font_dir.glob("*.ttf"):
-            base_name = font_file.stem
-            display_name = font_lookup.get(base_name, base_name)
-            fonts[display_name] = str(font_file)
-            
-        return fonts
+        return font_lookup
         
     def get_font_path(self, font_name: str) -> Optional[str]:
         """Get path to font file.
