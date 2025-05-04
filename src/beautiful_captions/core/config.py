@@ -73,7 +73,7 @@ class DiarizationConfig:
 
     def __post_init__(self):
         if self.colors is None:
-            self.colors = ["white", "yellow", "blue"]
+            self.colors = ["white", "yellow", "red"]
 
 @dataclass
 class CaptionConfig:

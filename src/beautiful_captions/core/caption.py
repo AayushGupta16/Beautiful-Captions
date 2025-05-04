@@ -105,7 +105,7 @@ async def add_subtitles(
         
         # Create config with diarization explicitly enabled for coloring
         # Use the color from style_config as the first color in diarization colors
-        diarization_colors = [style_config.color, "yellow", "blue"]
+        diarization_colors = [style_config.color, "yellow", "white"]
         config = CaptionConfig(
             style=style_config,
             diarization=DiarizationConfig(
@@ -181,7 +181,7 @@ async def subtitles_from_srt(
             raise TypeError("Style must be a string, dictionary, or StyleConfig object")
         
         # Use the color from style_config as the first color in diarization colors
-        diarization_colors = [style_config.color, "yellow", "blue"]
+        diarization_colors = [style_config.color, "yellow", "white"]
         config = CaptionConfig(
             style=style_config,
             diarization=DiarizationConfig(
@@ -255,7 +255,7 @@ async def extract_subtitles(
             
         # Create a new config with the specified style and default settings for other options
         # Use the color from style_config as the first color in diarization colors
-        diarization_colors = [style_config.color, "yellow", "blue"]
+        diarization_colors = [style_config.color, "yellow", "white"]
         config = CaptionConfig(
             style=style_config,
             diarization=DiarizationConfig(
@@ -318,7 +318,7 @@ def caption_stream(
             
         # Create a new config with the specified style and default settings for other options
         # Use the color from style_config as the first color in diarization colors
-        diarization_colors = [style_config.color, "yellow", "blue"]
+        diarization_colors = [style_config.color, "yellow", "white"]
         config = CaptionConfig(
             style=style_config,
             diarization=DiarizationConfig(

@@ -168,7 +168,7 @@ def style_srt_content(
     
     Args:
         srt_content: Plain SRT content
-        colors: List of colors to use for styling text (defaults to ["white", "yellow", "blue"])
+        colors: List of colors to use for styling text (defaults to ["white", "yellow", "red"])
         encode_speaker_colors: Whether to encode speaker colors in the output
         keep_speaker_labels: Whether to keep speaker labels in the output (default: False)
         max_words_per_line: Maximum number of words per line (default: 1)
@@ -179,7 +179,7 @@ def style_srt_content(
     """    
     # Default colors if none provided
     if colors is None:
-        colors = ["white", "yellow", "blue"]
+        colors = ["white", "yellow", "red"]
     
     # Parse the SRT content
     subs = pysrt.from_string(srt_content)
@@ -262,7 +262,7 @@ def style_srt_content(
     """    
     # Default colors if none provided
     if colors is None:
-        colors = ["white", "yellow", "blue"]
+        colors = ["white", "yellow", "red"]
     
     # Parse the SRT content
     subs = pysrt.from_string(srt_content)
