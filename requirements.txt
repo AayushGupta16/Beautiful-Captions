@@ -1,5 +1,5 @@
 pysrt==1.1.2
-assemblyai==0.37.0
+assemblyai==0.40.2
 deepgram-sdk==3.10.0
 openai>=1.64.0
 python-dotenv>=0.19.0

@@ -4,7 +4,7 @@ from typing import List, Optional, Dict
 import assemblyai as aai
 from datetime import timedelta
 import asyncio
-
+from assemblyai import SpeechModel
 from .base import TranscriptionService, Utterance, Word
 
 logger = logging.getLogger(__name__)
@@ -41,6 +41,7 @@ class AssemblyAIService(TranscriptionService):
         logger.info(f"Audio file size: {os.path.getsize(audio_path)} bytes")
         
         config = aai.TranscriptionConfig(
+            speech_model=SpeechModel.nano,
             speaker_labels=True,
             speakers_expected=max_speakers,
             language_detection=True,
