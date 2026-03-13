@@ -75,3 +75,5 @@ log/
 # Cache directories
 .ruff_cache/
 .mypy_cache/
+
+output/*
