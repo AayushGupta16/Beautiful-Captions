@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="beautiful-captions",
-    version="0.1.70",
+    version="0.1.71",
     package_dir={"": "src"},
     packages=find_packages(where="src"),
     include_package_data=True,
@@ -10,4 +10,4 @@ setup(
         "beautiful_captions": ["**/*.py", "fonts/*", "**/*.ttf"],
     },
     python_requires=">=3.8",
-) 
+)
