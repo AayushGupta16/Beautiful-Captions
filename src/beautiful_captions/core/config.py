@@ -75,27 +75,6 @@ class DiarizationConfig:
     keep_speaker_labels: bool = False
 
 
-# @dataclass
-# class CaptionConfig:
-#     style: StyleConfig = None
-#     animation: AnimationConfig = None
-#     diarization: DiarizationConfig = None
-
-#     def __post_init__(self):
-#         if isinstance(self.style, dict):
-#             self.style = StyleConfig(**self.style)
-#         elif self.style is None:
-#             self.style = StyleConfig()
-#         if isinstance(self.animation, dict):
-#             self.animation = AnimationConfig(**self.animation)
-#         elif self.animation is None:
-#             self.animation = AnimationConfig()
-#         if isinstance(self.diarization, dict):
-#             self.diarization = DiarizationConfig(**self.diarization)
-#         elif self.diarization is None:
-#             self.diarization = DiarizationConfig()
-
-
 @dataclass
 class CaptionConfig:
     style: StyleConfig = field(default_factory=StyleConfig)
