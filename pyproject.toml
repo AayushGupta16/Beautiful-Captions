@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "beautiful-captions"
-version = "0.1.70"
+version = "0.1.71"
 description = "A fast and elegant Python library for adding beautiful captions to videos"
 readme = "README.md"
 authors = [
@@ -30,6 +30,7 @@ dependencies = [
     "python-dotenv>=0.19.0",
     "aiohttp>=3.8.0",
     "ffmpeg-python>=0.2.0",
+    "pysrt>=1.1.2",
 ]
 requires-python = ">=3.8"
 
@@ -38,4 +39,3 @@ Homepage = "https://github.com/aayushgupta16/beautiful-captions"
 Repository = "https://github.com/aayushgupta16/beautiful-captions.git"
 Documentation = "https://beautiful-captions.readthedocs.io/"
 "Bug Tracker" = "https://github.com/aayushgupta16/beautiful-captions/issues"
-

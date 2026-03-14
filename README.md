@@ -147,6 +147,249 @@ Vote on upcoming features in our [GitHub Discussions](https://github.com/youruse
 - More animation types
 - Additional transcription services
 
+## Configuration Reference
+
+`CaptionConfig` accepts three nested configs: `style`, `animation`, and `diarization`. You can pass them as dict literals or as config objects.
+
+```python
+from beautiful_captions import Video, CaptionConfig
+```
+
+### CaptionConfig
+
+The top-level config that wraps everything:
+
+```python
+# Using dicts (recommended)
+config = CaptionConfig(
+    style={...},
+    animation={...},
+    diarization={...},
+)
+
+# Using config objects
+from beautiful_captions.core.config import StyleConfig, AnimationConfig, DiarizationConfig
+
+config = CaptionConfig(
+    style=StyleConfig(...),
+    animation=AnimationConfig(...),
+    diarization=DiarizationConfig(...),
+)
+```
+
+---
+
+### StyleConfig
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `font` | `str` | `"Montserrat"` | Font family name |
+| `font_size` | `int` | `140` | Font size in pixels |
+| `color` | `str` | `"white"` | Text color (`white`, `yellow`, `red`, `blue`, `green`, `purple`, `black`) |
+| `outline_color` | `str` | `"black"` | Outline color |
+| `outline_thickness` | `int` | `10` | Outline thickness in pixels |
+| `verticle_position` | `float` | `0.5` | Vertical position (0.0 = bottom, 1.0 = top) |
+| `max_words_per_line` | `int` | `1` | Max words per subtitle line (only works with word-level SRT input) |
+| `auto_scale_font` | `bool` | `True` | Auto-scale font size based on text length |
+| `censor_subtitles` | `bool` | `False` | Enable profanity censoring |
+| `custom_censored_words` | `dict` | `None` | Custom word replacements (e.g. `{"damn": "d*mn"}`) |
+
+### AnimationConfig
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `enabled` | `bool` | `True` | Enable/disable animation |
+| `type` | `str` | `"bounce"` | Animation type |
+| `keyframes` | `int` | `10` | Number of animation keyframes |
+
+### DiarizationConfig
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `enabled` | `bool` | `True` | Enable/disable speaker diarization colors |
+| `colors` | `list[str]` | `["white", "yellow", "red"]` | Colors assigned to speakers in order |
+| `max_speakers` | `int` | `3` | Maximum number of speakers to detect |
+| `keep_speaker_labels` | `bool` | `False` | Show "Speaker A:" labels in output |
+
+---
+
+### Config Examples
+
+**Minimal — all defaults:**
+```python
+video = Video("input.mp4")
+video.add_captions(srt_content=srt, output_path="output.mp4")
+```
+
+**No animation, no scaling — plain constant-size text:**
+```python
+video = Video("input.mp4", config=CaptionConfig(
+    animation={"enabled": False},
+    style={"auto_scale_font": False},
+))
+```
+
+**Animation on, scaling off — constant size with no flicker:**
+```python
+video = Video("input.mp4", config=CaptionConfig(
+    animation={"enabled": True},
+    style={"auto_scale_font": False},
+))
+```
+
+**Animation off, scaling on — static size adapts to text length:**
+```python
+video = Video("input.mp4", config=CaptionConfig(
+    animation={"enabled": False},
+    style={"auto_scale_font": True},
+))
+```
+
+**Bounce animation with auto-scaling:**
+```python
+video = Video("input.mp4", config=CaptionConfig(
+    animation={"enabled": True, "type": "bounce", "keyframes": 10},
+    style={"auto_scale_font": True},
+))
+```
+
+**Multi-word lines (2 words per line):**
+```python
+video = Video("input.mp4", config=CaptionConfig(
+    style={"max_words_per_line": 2},
+))
+```
+
+**Speaker diarization with custom colors:**
+```python
+video = Video("input.mp4", config=CaptionConfig(
+    diarization={"enabled": True, "colors": ["yellow", "white"]},
+))
+```
+
+**Speaker labels visible:**
+```python
+video = Video("input.mp4", config=CaptionConfig(
+    diarization={"enabled": True, "colors": ["red", "green"], "keep_speaker_labels": True},
+))
+```
+
+**Large font, no animation:**
+```python
+video = Video("input.mp4", config=CaptionConfig(
+    style={"font_size": 200, "auto_scale_font": False},
+    animation={"enabled": False},
+))
+```
+
+**Small font with bounce:**
+```python
+video = Video("input.mp4", config=CaptionConfig(
+    style={"font_size": 80, "auto_scale_font": True},
+    animation={"enabled": True},
+))
+```
+
+**Custom outline:**
+```python
+video = Video("input.mp4", config=CaptionConfig(
+    style={"outline_thickness": 20, "outline_color": "blue"},
+    animation={"enabled": False},
+))
+```
+
+**Bottom position:**
+```python
+video = Video("input.mp4", config=CaptionConfig(
+    style={"verticle_position": 0.15},
+))
+```
+
+**Top position:**
+```python
+video = Video("input.mp4", config=CaptionConfig(
+    style={"verticle_position": 0.85},
+))
+```
+
+**Profanity censoring:**
+```python
+video = Video("input.mp4", config=CaptionConfig(
+    style={"censor_subtitles": True},
+))
+```
+
+**Custom censored words:**
+```python
+video = Video("input.mp4", config=CaptionConfig(
+    style={
+        "censor_subtitles": True,
+        "custom_censored_words": {"damn": "d*mn", "hell": "h*ll"},
+    },
+))
+```
+
+**Kitchen sink — everything combined:**
+```python
+video = Video("input.mp4", config=CaptionConfig(
+    animation={"enabled": True, "type": "bounce", "keyframes": 15},
+    style={
+        "font": "Montserrat",
+        "font_size": 120,
+        "color": "white",
+        "outline_color": "black",
+        "outline_thickness": 10,
+        "verticle_position": 0.5,
+        "auto_scale_font": True,
+        "max_words_per_line": 2,
+        "censor_subtitles": False,
+    },
+    diarization={
+        "enabled": True,
+        "colors": ["yellow", "white", "red"],
+        "max_speakers": 3,
+        "keep_speaker_labels": False,
+    },
+))
+video.add_captions(
+    srt_content=subtitle_content,
+    output_path="output.mp4",
+    add_styling=True,
+    cuda=False,  # Set True for NVIDIA GPU acceleration
+)
+```
+
+**Using with SRT file path:**
+```python
+video = Video("input.mp4", config=CaptionConfig(
+    style={"auto_scale_font": False},
+    animation={"enabled": False},
+))
+video.add_captions(srt_input_path="subtitles.srt", output_path="output.mp4")
+```
+
+**Using with inline SRT content:**
+```python
+srt = """
+1
+00:00:00,000 --> 00:00:02,500
+Speaker A: Hello world.
+
+2
+00:00:02,500 --> 00:00:05,000
+Speaker B: How are you?
+"""
+
+video = Video("input.mp4", config=CaptionConfig(
+    diarization={"enabled": True, "colors": ["yellow", "white"]},
+    animation={"enabled": False},
+    style={"auto_scale_font": False},
+))
+video.add_captions(srt_content=srt, output_path="output.mp4", add_styling=True)
+```
+
+---
+
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.

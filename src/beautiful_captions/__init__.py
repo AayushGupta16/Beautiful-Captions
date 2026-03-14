@@ -7,7 +7,7 @@ from .styling.style import StyleManager, FontManager
 from .styling.animation import AnimationFactory, create_animation_for_subtitle
 from .utils.subtitles import style_srt_content
 
-__version__ = "0.1.70"
+__version__ = "0.1.71"
 
 __all__ = [
     # Main functions
@@ -15,14 +15,14 @@ __all__ = [
     "add_subtitles",
     "extract_subtitles",
     "caption_stream",
-    
+
     # Classes
     "Video",
     "CaptionConfig",
     "StyleConfig",
     "AnimationConfig",
     "DiarizationConfig",
-    
+
     # Styling
     "StyleManager",
     "FontManager",

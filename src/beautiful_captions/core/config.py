@@ -1,5 +1,6 @@
 from dataclasses import dataclass, field
-from typing import List, Optional, Dict
+from typing import Dict, List, Optional
+
 
 def default_censored_words() -> Dict[str, str]:
     """Default dictionary of words to censor."""
@@ -9,13 +10,12 @@ def default_censored_words() -> Dict[str, str]:
         "kill": "k*ll",
         "death": "d*ath",
         "idiot": "id*ot",
-        "moron": "m*ron", 
+        "moron": "m*ron",
         "pathetic": "path*tic",
         "scum": "sc*m",
         "dead": "d*ad",
         "pissed": "p*ssed",
         "gun": "g*n",
-        
         # Strong censoring
         "asshole": "a**hole",
         "assholes": "a**holes",
@@ -40,6 +40,7 @@ def default_censored_words() -> Dict[str, str]:
         "fucker": "f**ker",
     }
 
+
 @dataclass
 class StyleConfig:
     font: str = "Montserrat"
@@ -48,15 +49,16 @@ class StyleConfig:
     outline_color: str = "black"
     outline_thickness: int = 10
     font_size: int = 140
-    max_words_per_line: int = 1  
+    max_words_per_line: int = 1
     auto_scale_font: bool = True
     censor_subtitles: bool = False
     custom_censored_words: Optional[Dict[str, str]] = None
-    
+
     def __post_init__(self):
         # Initialize with default censored words if censorship is enabled but no custom words provided
         if self.censor_subtitles and self.custom_censored_words is None:
             self.custom_censored_words = default_censored_words()
+
 
 @dataclass
 class AnimationConfig:
@@ -64,27 +66,25 @@ class AnimationConfig:
     type: str = "bounce"
     keyframes: int = 10
 
+
 @dataclass
 class DiarizationConfig:
     enabled: bool = True
-    colors: List[str] = None
+    colors: List[str] = field(default_factory=lambda: ["white", "yellow", "red"])
     max_speakers: int = 3
     keep_speaker_labels: bool = False
 
-    def __post_init__(self):
-        if self.colors is None:
-            self.colors = ["white", "yellow", "red"]
 
 @dataclass
 class CaptionConfig:
-    style: StyleConfig = None
-    animation: AnimationConfig = None
-    diarization: DiarizationConfig = None
+    style: StyleConfig = field(default_factory=StyleConfig)
+    animation: AnimationConfig = field(default_factory=AnimationConfig)
+    diarization: DiarizationConfig = field(default_factory=DiarizationConfig)
 
     def __post_init__(self):
-        if self.style is None:
-            self.style = StyleConfig()
-        if self.animation is None:
-            self.animation = AnimationConfig()
-        if self.diarization is None:
-            self.diarization = DiarizationConfig()
+        if isinstance(self.style, dict):
+            self.style = StyleConfig(**self.style)
+        if isinstance(self.animation, dict):
+            self.animation = AnimationConfig(**self.animation)
+        if isinstance(self.diarization, dict):
+            self.diarization = DiarizationConfig(**self.diarization)
