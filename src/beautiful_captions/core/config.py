@@ -83,8 +83,8 @@ class CaptionConfig:
 
     def __post_init__(self):
         if isinstance(self.style, dict):
-            self.style = StyleConfig(**self.style)
+            self.style = StyleConfig(**self.style) # type: ignore
         if isinstance(self.animation, dict):
-            self.animation = AnimationConfig(**self.animation)
+            self.animation = AnimationConfig(**self.animation) # type: ignore
         if isinstance(self.diarization, dict):
-            self.diarization = DiarizationConfig(**self.diarization)
+            self.diarization = DiarizationConfig(**self.diarization) # type: ignore

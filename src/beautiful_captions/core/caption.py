@@ -4,12 +4,11 @@ import logging
 from pathlib import Path
 from typing import Any, Dict, Optional, Union
 
-from src.beautiful_captions.core.types import ServiceType
-
 from ..transcription.assemblyai import AssemblyAIService
 from ..transcription.base import TranscriptionService
 from ..utils.subtitles import style_srt_content
 from .config import CaptionConfig, DiarizationConfig, StyleConfig
+from .types import ServiceType
 from .video import Video
 
 logger = logging.getLogger(__name__)
@@ -94,7 +93,7 @@ async def add_subtitles(
             if isinstance(style, str):
                 style_config = StyleConfig()
             elif isinstance(style, dict):
-                style_config = StyleConfig(**style)
+                style_config = StyleConfig(**style) # type: ignore
             elif isinstance(style, StyleConfig):
                 style_config = style
             else:
@@ -157,7 +156,7 @@ async def add_subtitles(
         video_output = video.add_captions(output_path=output_path, cuda=cuda)
 
     if srt_output_path:
-        return video_output, srt_output_path
+        return video_output, srt_output_path # type: ignore
     return video_output
 
 
@@ -191,7 +190,7 @@ async def subtitles_from_srt(
         if isinstance(style, str):
             style_config = StyleConfig()
         elif isinstance(style, dict):
-            style_config = StyleConfig(**style)
+            style_config = StyleConfig(**style) # type: ignore
         elif isinstance(style, StyleConfig):
             style_config = style
         else:
@@ -208,7 +207,7 @@ async def subtitles_from_srt(
 
     with Video(video_path, config) as video:
         if srt_content is None and srt_input_path is not None:
-            with open(srt_input_path, "r", encoding="utf-8") as f:
+            with open(srt_input_path, encoding="utf-8") as f:
                 srt_content = f.read()
 
         video_output = video.add_captions(
@@ -257,7 +256,7 @@ async def extract_subtitles(
                 # You could implement preset styles here
             elif isinstance(style, dict):
                 # Convert dict to StyleConfig
-                style_config = StyleConfig(**style)
+                style_config = StyleConfig(**style) # type: ignore
             elif isinstance(style, StyleConfig):
                 # Use the provided StyleConfig directly
                 style_config = style
@@ -324,7 +323,7 @@ def caption_stream(
             # You could implement preset styles here
         elif isinstance(style, dict):
             # Convert dict to StyleConfig
-            style_config = StyleConfig(**style)
+            style_config = StyleConfig(**style) # type: ignore
         elif isinstance(style, StyleConfig):
             # Use the provided StyleConfig directly
             style_config = style

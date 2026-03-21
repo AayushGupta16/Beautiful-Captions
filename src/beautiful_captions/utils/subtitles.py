@@ -5,7 +5,7 @@ import re
 from pathlib import Path
 from typing import List, Optional, Union
 
-import pysrt  # type: ignore[import-untyped]
+import pysrt  # type: ignore
 
 from ..core.config import AnimationConfig, StyleConfig
 from ..styling.style import FontManager
@@ -156,9 +156,9 @@ def create_ass_subtitles(
                         #     animated_text += f"{{\\t({t:.2f},{t:.2f},\\fscx{scale:.0f}\\fscy{scale:.0f})}}"
 
                         # Calculate scale at each keyframe time
-                        def scale_at(t, dur):
+                        def scale_at(t, dur, _scale=target_scale):
                             return max(
-                                target_scale, 100 - (100 - target_scale) * (t / dur)
+                                _scale, 100 - (100 - _scale) * (t / dur)
                             )
 
                         # Set initial scale as starting point (no flicker)
@@ -365,12 +365,11 @@ def _optimize_subtitles_for_max_words(subs, max_words_per_line: int):
             current_word_count += word_count
 
         # If we've reached max_words_per_line or this is the last subtitle
-        if current_word_count >= max_words_per_line or i == len(subs) - 1:
-            if current_batch:
-                result.append(create_subtitle_from_batch(current_batch))
-                current_batch = []
-                current_speaker = None
-                current_word_count = 0
+        if (current_word_count >= max_words_per_line or i == len(subs) - 1) and current_batch:
+            result.append(create_subtitle_from_batch(current_batch))
+            current_batch = []
+            current_speaker = None
+            current_word_count = 0
 
     # Process any remaining batch
     if current_batch:
