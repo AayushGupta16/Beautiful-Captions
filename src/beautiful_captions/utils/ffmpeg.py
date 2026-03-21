@@ -1,9 +1,10 @@
 """FFmpeg utilities for video and audio processing."""
 
 import logging
-from pathlib import Path
-from typing import Union, Tuple, Optional
 import subprocess
+from pathlib import Path
+from typing import Optional, Tuple, Union
+
 from ..styling.style import FontManager
 
 logger = logging.getLogger(__name__)

@@ -67,32 +67,31 @@ class NewService(TranscriptionService):
 ### Setting Up Development Environment
 
 ```bash
+# Install uv (if not already installed)
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
 # Clone your fork
 git clone https://github.com/your-username/beautiful-captions.git
 cd beautiful-captions
 
-# Create virtual environment
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-
-# Install development dependencies
-pip install -e ".[dev]"
+# Install all dependencies (creates virtualenv automatically)
+uv sync
 
 # Run tests
-pytest
+uv run pytest
 ```
 
 ### Running Tests
 
 ```bash
 # Run all tests
-pytest
+uv run pytest -n 2
 
 # Run specific test file
-pytest tests/test_transcription.py
+uv run pytest -n 2 tests/test_transcription.py
 
 # Run with coverage
-pytest --cov=beautiful_captions tests/
+uv run pytest -n 2 --cov=beautiful_captions tests/
 ```
 
 ## Pull Request Process

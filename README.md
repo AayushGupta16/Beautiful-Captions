@@ -17,6 +17,12 @@ A fast and elegant Python library for adding beautiful captions to videos. Combi
 pip install beautiful-captions
 ```
 
+Or with [uv](https://docs.astral.sh/uv/):
+
+```bash
+uv add beautiful-captions
+```
+
 ## Quick Start
 
 Beautiful Captions provides two API styles to suit your needs:
@@ -121,22 +127,19 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for full details on our development proce
 
 ### Development Setup
 
-1. Clone the repository:
+1. Install [uv](https://docs.astral.sh/uv/) (if not already installed):
+```bash
+curl -LsSf https://astral.sh/uv/install.sh | sh
+```
+
+2. Clone the repository and install dependencies:
 ```bash
 git clone https://github.com/aayushgupta16/beautiful-captions.git
 cd beautiful-captions
+uv sync
 ```
 
-2. Create a virtual environment:
-```bash
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-```
-
-3. Install development dependencies:
-```bash
-pip install -e ".[dev]"
-```
+This will create a virtual environment and install all dependencies automatically.
 
 ## Future Features
 

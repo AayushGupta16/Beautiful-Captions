@@ -1,7 +1,4 @@
-import os
-from src.beautiful_captions import CaptionConfig, Video
-
-INPUT_VIDEO = "input.mp4"
+INPUT_VIDEO = "src/tests/input.mp4"
 
 SUBTITLE_CONTENT = """
 1
@@ -116,29 +113,3 @@ CONFIGS = {
         "diarization": {"enabled": True, "colors": ["yellow", "white", "red"]},
     },
 }
-
-
-def run_all():
-    total = len(CONFIGS)
-
-    os.makedirs("output", exist_ok=True)
-
-    for i, (name, kwargs) in enumerate(CONFIGS.items(), 1):
-        output = f"output/{i}_{name}.mp4"
-        print(f"[{i}/{total}] Generating: {output}")
-        try:
-            video = Video(INPUT_VIDEO, config=CaptionConfig(**kwargs))
-            video.add_captions(
-                srt_content=SUBTITLE_CONTENT,
-                output_path=output,
-                add_styling=True,
-                cuda=False,
-            )
-            print("  -> OK")
-        except Exception as e:
-            print(f"  -> FAILED: {e}")
-    print(f"\nDone. {total} videos generated in output/")
-
-
-if __name__ == "__main__":
-    run_all()

@@ -30,12 +30,69 @@ dependencies = [
     "python-dotenv>=0.19.0",
     "aiohttp>=3.8.0",
     "ffmpeg-python>=0.2.0",
-    "pysrt>=1.1.2",
 ]
 requires-python = ">=3.8"
+
+[dependency-groups]
+dev = [
+    "pytest>=7.0",
+    "pytest-xdist>=3.0",
+    "build>=1.0",
+    "ruff>=0.8.0",
+    "ty>=0.0.1a0",
+]
 
 [project.urls]
 Homepage = "https://github.com/aayushgupta16/beautiful-captions"
 Repository = "https://github.com/aayushgupta16/beautiful-captions.git"
 Documentation = "https://beautiful-captions.readthedocs.io/"
 "Bug Tracker" = "https://github.com/aayushgupta16/beautiful-captions/issues"
+
+[tool.ruff]
+target-version = "py38"
+line-length = 88
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "UP",  # pyupgrade
+    "B",   # flake8-bugbear
+    "SIM", # flake8-simplify
+]
+ignore = [
+    "E501", # line too long (handled by formatter)
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["beautiful_captions"]
+
+[tool.ty.environment]
+python-version = "3.12"
+root = ["./src"]
+
+[tool.ty.rules]
+possibly-unresolved-reference = "warn"
+
+[tool.ty.analysis]
+allowed-unresolved-imports = [
+    "pysrt",
+    "assemblyai",
+    "deepgram",
+    "ffmpeg",
+    "aiohttp",
+]
+
+[tool.basedpyright]
+venvPath = "."
+venv = ".venv"
+reportUninitializedInstanceVariable = false
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+beautiful_captions = ["**/*.py", "fonts/*", "**/*.ttf"]

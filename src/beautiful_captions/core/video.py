@@ -3,12 +3,11 @@
 from pathlib import Path
 from typing import Optional, Union, cast
 
-from src.beautiful_captions.core.types import ServiceType
-
 from ..core.config import CaptionConfig
 from ..transcription.base import TranscriptionService
 from ..utils.ffmpeg import combine_video_subtitles, extract_audio
 from ..utils.subtitles import create_ass_subtitles, style_srt_content
+from .types import ServiceType
 
 
 class Video:
@@ -68,7 +67,7 @@ class Video:
         )
 
         # Transcribe with optional censorship
-        self._utterances = await service.transcribe(
+        self._utterances = await service.transcribe( # type: ignore[reportUninitializedInstanceVariable]
             str(self._audio_path),
             max_speakers,
             censor_subtitles=censor_subtitles,
@@ -102,7 +101,7 @@ class Video:
         """
         # Get SRT content from file or string or transcription
         if srt_input_path:
-            with open(srt_input_path, "r", encoding="utf-8") as f:
+            with open(srt_input_path, encoding="utf-8") as f:
                 srt_content = f.read()
         elif not srt_content and not self._srt_content:
             raise ValueError(
